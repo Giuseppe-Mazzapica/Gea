@@ -1,0 +1,46 @@
+{
+  "name": "gmazzap/ayika",
+  "type": "library",
+  "description": "Loads environment variables from `.env` to `getenv()`, `$_ENV` and `$_SERVER`.",
+  "keywords": [
+    "env",
+    "dotenv",
+    "environment"
+  ],
+  "homepage": "http://github.com/Giuseppe-Mazzapica/ayika",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Giuseppe Mazzapica",
+      "email": "giuseppe.mazzapica@gmail.com"
+    },
+    {
+      "name": "Vance Lucas",
+      "email": "vance@vancelucas.com",
+      "homepage": "http://www.vancelucas.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.5"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "4.8.*",
+    "mockery/mockery": "0.9.3",
+    "gmazzap/andrew": "1.0.*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Ayika\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Ayika\\Tests\\": "tests/src/"
+    }
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "0.1-dev"
+    }
+  }
+}
