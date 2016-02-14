@@ -1,11 +1,11 @@
 Gea
 ====
 
-> Loads environment variables from `.env` to `getenv()`, `$_ENV` and `$_SERVER`.
+> Environment variables management in PHP
 
 -----
-**This is a fork (and refactoring) of [PHP dotenv by Vance Lucas](https://github.com/vlucas/phpdotenv)**.
------
+
+Highly inspired to [PHP Dotenv](https://github.com/vlucas/phpdotenv) by [Vance Lucas](http://www.vancelucas.com/).
 
 -----
 
@@ -18,7 +18,7 @@ Gea
   - The `.env.example` file
   - Comments
   - Nesting Variables
-- [Gea Usage](#ayika-usage)
+- [Gea Usage](#gea-usage)
   - Loading Variables
   - Accessing Variables
   - Immutability
@@ -38,7 +38,7 @@ Gea
 - [Usage Notes](#usage-notes)
   - Development VS Production Environments
   - Command Line Scripts
-- [Why this fork?](#why-this-fork)
+- [Why Gea (instead of PHP Dotenv)](#why-gea-instead-of-php-dotenv)
   - Differences between PHP dotenv and Gea
   - What stayed the same?
 - [Minimum Requirements](#minimum-requirements)
@@ -128,7 +128,7 @@ BASE_DIR="/var/webroot/project-root"
 CACHE_DIR="${BASE_DIR}/cache"
 TMP_DIR="${BASE_DIR}/tmp"
 ```
-With Gea is possible to use more than one variable into another. e.g.
+With Gea is possible to combine more variables into another. e.g.
 
 ```shell
 FOO="foo"
@@ -149,27 +149,41 @@ Before to access variables, you need to *load* them using Gea. The required code
 Gea\Gea::instance(__DIR__)->load();
 ```
 
-Where `__DIR__` represent the folder where the `.env` is located. It is possible to use a different id for the file,
-just pass it as second argument to `instance()` method.
+Where `__DIR__` represents the folder where the `.env` is located.
+
+It is possible to use a different id for the file, just pass it as second argument to `instance()` method.
+This may be useful to load more environment files (see "***Load More Files***" below).
 
 ## Accessing Variables
 
-After all variables have been loaded, it's possible to access them
+After all variables have been loaded:
+
+```php
+$gea = Gea\Gea::instance(__DIR__);
+$gea->load();
+``
+
+it's possible to access them in different ways:
 
 - with the `getenv` function
 - as part of the `$_ENV` super-global
 - as part of the `$_SERVER` super-global
 - using Gea object `read()` method
+- using Gea `ArrayAccess` methods
+
+All following lines do same thing:
 
 ```php
-$ayika = Gea\Gea::instance(__DIR__);
-$ayika->load();
-
 $s3_bucket = getenv('S3_BUCKET');
 $s3_bucket = $_ENV['S3_BUCKET'];
 $s3_bucket = $_SERVER['S3_BUCKET'];
-$s3_bucket = $ayika->read('S3_BUCKET');
+$s3_bucket = $gea->read('S3_BUCKET');
+$s3_bucket = $gea['S3_BUCKET'];
 ```
+
+This is true using default accessor class that ships with Gea, but it is possible to customize
+write and read Gea behaviour using custom accessor classes.
+
 
 ## Immutability
 
@@ -189,9 +203,9 @@ Gea does that:
 If you try to call `load()` more than once, an exception is thrown:
 
 ```php
-$ayika = Gea\Gea::instance(__DIR__);
-$ayika->load();
-$ayika->load(); // Exception!
+$gea = Gea\Gea::instance(__DIR__);
+$gea->load();
+$gea->load(); // Exception!
 ```
 
 ### Load More Files
@@ -210,13 +224,13 @@ A way to allow consecutive calls to `load()` is to *flush* the Gea instance, tha
 be changed during app execution:
 
 ```php
-$ayika = Gea\Gea::instance(__DIR__);
-$ayika->load();
+$gea = Gea\Gea::instance(__DIR__);
+$gea->load();
 
 // let's assume .env file somewhat change here...
 
-$ayika->flush();
-$ayika->load();
+$gea->flush();
+$gea->load();
 ```
 
 ### No Overwrite 
@@ -239,70 +253,71 @@ BAR="I am the old BAR value"
 It is possible to:
 
 ```php
-$ayika = Gea\Gea::instance(__DIR__);
-$ayika->load();
+$gea = Gea\Gea::instance(__DIR__);
+$gea->load();
 
 echo getenv("FOO"); // echo "I am the old FOO value"
 
-$discard = $ayika->discard("FOO");
+$discard = $gea->discard("FOO");
 
-$ayika->write("FOO", "I am the NEW FOO value");
+$gea->write("FOO", "I am the NEW FOO value");
 
 echo getenv("FOO"); // echo "I am the NEW FOO value"
 ```
 
-`$discard` in code above is equal to `I am the old FOO value` because `discard()` returns the old value that have been
- just discarded. It will be equal to `null` if there was no value set.
+`discard()` returns the old value that have been  just discarded.
+So `$discard` in code above is equal to `"I am the old FOO value"`.
+
+It will be equal to `null` if there was no value set.
 
 ### Hard Flushing
 
-If you need to discard more variables, is possible to do an *hard flush*:
+If you need to discard more variables, is possible to do an *hard flush* by passing `GEA::HARD_FLUSH`
+as second argument to `flush()` method and (optionally) an array of variables to hard flush as third
+argument:
 
-$ayika = Gea\Gea::instance(__DIR__);
-$ayika->load();
+```php
+$gea = Gea\Gea::instance(__DIR__);
+$gea->load();
 
-$ayika->flush(true, ['FOO', 'BAR']);
+$gea->flush(Gea\Gea::HARD_FLUSH, ['FOO', 'BAR']);
 
-$ayika->write("FOO", "I am the new FOO value");
-$ayika->write("BAR", "I am the new BAR value");
+$gea->write("FOO", "I am the new FOO value");
+$gea->write("BAR", "I am the new BAR value");
 ```
-
-After the hard flush is even possible to load an `.env` file using the same Gea instance, assuming that all the old
-variables have been flushed (so their names have been passed as second argument to `flush()`).
-
-For these reason may be necessary to know the id of all variables that have been set.
+When no thirg argument is given (or it is an empty array) all variables are flushed.
 
 
-## Access Names of Set Variables
+## Access Names of Variables
 
 Gea `load()` method returns the array of all the variables that have been set:
 
 ```php
-$ayika = Gea\Gea::instance(__DIR__);
-$names = $ayika->load();
+$gea = Gea\Gea::instance(__DIR__);
+$names = $gea->load();
 
 var_dump( $names ); // array( 'FOO', 'BAR' )
 ```
 
-Moreover, `write()` method returns the id of the variables just set:
+Moreover, `write()` method returns the name of the variables just set:
 
 ```php
-$id = $ayika->write(" FOO = BAR ");
+$name = $gea->write("FOO = BAR");
 
-var_dump( $id ); // "FOO"
+var_dump( $name ); // "FOO"
 ```
 
 ### Make Gea Hold Variables Names
 
 By default, Gea instances does not store the names of the variables that have been set, but it is possible to do that,
-by setting passing `true` as third argument to `Gea::instance()` method. After that, names can be accessed using
+by using `Gea::HOLD_VAR_NAMES` as third argument to `Gea::instance()` method. After that, names can be accessed using
 `varNames()` method:
 
 ```php
-$ayika = Gea\Gea::instance(__DIR__, '.env', true);
-$ayika->load();
+$gea = Gea\Gea::instance(__DIR__, '.env', Gea\Gea::HOLD_VAR_NAMES);
+$gea->load();
 
-$names = $ayika->varNames();
+$names = $gea->varNames();
 
 var_dump( $names ); // array( 'FOO', 'BAR' )
 ```
@@ -312,13 +327,13 @@ Note that if `varNames()` is called without instructing Gea to hold var names, a
 When Gea is set to hold var names, any call to `write()` updated the array of names:
  
 ```php
-$names = $ayika->varNames();
+$names = $gea->varNames();
 
 var_dump( $names ); // array( 'FOO', 'BAR' )
 
-$ayika->write("BAZ", "I am the BAZ value");
+$gea->write("BAZ", "I am the BAZ value");
 
-$names = $ayika->varNames();
+$names = $gea->varNames();
 
 var_dump( $names ); // array( 'FOO', 'BAR', 'BAZ' )
 ```
@@ -341,13 +356,13 @@ applied on the result of previous filters.
 Required filter can be used to ensure some variables are set.
 
 ```php
-$ayika = Gea\Gea::instance(__DIR__);
-$ayika->load();
+$gea = Gea\Gea::instance(__DIR__);
+$gea->load();
 
 // if DB_USER or DB_PASSWORD are not set an exception is thrown
 
-$ayika->addFilter('DB_USER', 'required');    
-$ayika->addFilter('DB_PASSWORD', 'required');
+$gea->addFilter('DB_USER', 'required');    
+$gea->addFilter('DB_PASSWORD', 'required');
 ```
 
 ### Validating Variables
@@ -357,7 +372,7 @@ validation filter is `'enum'` that ensures the variable ois in a set of predefin
 
 ```php
 $allowed = ['ready', 'in-progress', 'draft'];
-$ayika->addFilter('APP_STATUS', ['enum' => [$allowed]);    
+$gea->addFilter('APP_STATUS', ['enum' => [$allowed]);    
 ```
 
 Using code above we ensures that `APP_STATUS` env var is equal to one of the three strings passed in the `$allowed` array.
@@ -378,8 +393,7 @@ Gea filters can be used to ensures this types.
 
 **Please note**:
 
-- post-process filters only apply when vars are accessed using `$ayika->read()` method, they do nothing when
-  vars are accessed
+- post-process filters only apply when vars are accessed using `$gea->read()` or via `ArrayAccess` syntax on Gea instance
 - post-process filters are applied *lazily*: they run when the related variable is first accessed, in this way a never
   used bad variable does not hurt the app.
   
@@ -396,10 +410,10 @@ E.g. `'int'` return `0`, `'array'` an empty array and `'object'` instantiate the
 However, is possible to combine these filters with `'required'` filter to ensure var is set.
 
 ```php
-$ayika->addFilter('DEBUG_ENABLED', 'bool');   
-$ayika->addFilter('MAX_USERS', ['required', 'int']);
-$ayika->addFilter('ADMIN_EMAIL', ['object' => [MyApp\EmailValueObject::class]);
-$ayika->addFilter('USER_DATA', ['required', 'array', 'object' => ['ArrayObject']);
+$gea->addFilter('DEBUG_ENABLED', 'bool');   
+$gea->addFilter('MAX_USERS', ['required', 'int']);
+$gea->addFilter('ADMIN_EMAIL', ['object' => [MyApp\EmailValueObject::class]);
+$gea->addFilter('USER_DATA', ['required', 'array', 'object' => ['ArrayObject']);
 ```
 
 In code above:
@@ -411,7 +425,7 @@ In code above:
   obtained exploding the env var by comma. This is because filters are applied in *waterfall*.
   Moreover, an exception is thrown when the env var is not set because it is required
   
-Again: remember that what said above only applies if var are accessed via `$ayika->read()`.
+Again: remember that what said above only applies if var are accessed via `$gea->read()` or via `ArrayAccess` syntax on Gea instance.
 
 
 ### Custom Filters
@@ -439,7 +453,7 @@ files at all: without calling `load()` Gea just assumes the variables are set in
 ## Command Line Scripts
 
 If you need to use environment variables that you have set in your `.env` file
-in a command info script that doesn't use the Dotenv library, you can `source`
+in a command info script that doesn't use Gea, you can `source`
 it into your local shell session:
 
 ```shell
@@ -449,15 +463,15 @@ source .env
 -----
 
 
-# Why this fork?
+# Why Gea (instead of PHP Dotenv)?
 
-Gea born from a fork (and a refactoring) of [PHP dotenv](https://github.com/vlucas/phpdotenv) by Vance Lucas.
+Gea was born as a fork of [PHP dotenv](https://github.com/vlucas/phpdotenv) by Vance Lucas.
 
-That library is used in millions of apps and is considered by PHP community as a very affordable piece of code.
+That library is widely used and is considered by PHP community as a very affordable piece of code.
 
-So, *why this fork*?
+So, *why this*?
 
-The original idea was to contribute to PHP dotenv and try to introduce there an interface for their `Loader` class that would
+The original idea was to contribute to PHP Dotenv and try to introduce there an interface for their `Loader` class that would
 allow me to customize the way it works by default.
 
 But after having forked and added the interface, I could not stop myself refactoring... ending up in a completely different
@@ -465,12 +479,13 @@ architecture, something that can't be merged in a pull request.
 
 ## Differences between PHP dotenv and Gea
 
+- Different architecture. Gea architecture is more complex (bad), but also much more flexible (good).
+  Depending on use case, you may want to use Gea because thanks to its OOP architecture allows to customize every aspect of how Gea works.
 - Minimum required PHP version: 5.3.9 for PHP dotenv, 5.5 for Gea.
-- Different architecture. Gea architecture is more "structured" that, yes, means more complex but also much more flexible.
-  Thanks to its OOP architecture allows to customize every aspect of how Gea works.
-- Introduce filtering (PHP dotenv has "required" and "allowedValues" feature, OOP nature of Gea filters make them easier configurable)
+- Introduce filtering (PHP Dotenv has "required" and "allowedValues" feature, OOP nature of Gea filters make them easier configurable)
 - Env variables can contain more than one *nested* var
-- License that is BSD-3-clause for PHP dotenv, MIT for Gea. 
+- Easy to have a clue of which variables have been set
+- License that is BSD-3-clause for PHP Dotenv, MIT for Gea. 
 
 ## What stayed the same?
 
@@ -478,7 +493,6 @@ architecture, something that can't be merged in a pull request.
 - The code that parse `.env` files, that has been proved to be very effective, has not be touched at all: thanks Vance :)
 - Part of this readme
 - Part of the tests and test fixtures
-
 
 -----
 
@@ -489,8 +503,7 @@ architecture, something that can't be merged in a pull request.
 
 # Installation
 
-With Composer require `gmazzap/ayika`.
-
+With Composer require `gmazzap/gea`.
 
 # License
 
@@ -502,10 +515,9 @@ Gea is released under MIT license https://opensource.org/licenses/MIT
 
 # Contributing
 
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Make your changes
-4. Run the tests, adding new ones for your own code if necessary (`phpunit`)
-5. Commit your changes (`git commit -am 'Added some feature'`)
-6. Push to the branch (`git push origin my-new-feature`)
-7. Create new Pull Request
+See `CONTRIBUTING.md`.
+
+**Don't** use issue tracker (nor send any pull request) if you find a **security** issue.
+They are public, so please send an email to the address on my [Github profile](https://github.com/Giuseppe-Mazzapica).
+
+Thanks.
