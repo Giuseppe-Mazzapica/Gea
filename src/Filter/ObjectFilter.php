@@ -36,6 +36,10 @@ final class ObjectFilter implements FilterInterface
      */
     public function __construct($class)
     {
+        if (strpos($class, '::class') && substr_count($class, '::class') === 1) {
+            $class = substr($class, 0, -7);
+        }
+
         $this->class = $class;
     }
 
