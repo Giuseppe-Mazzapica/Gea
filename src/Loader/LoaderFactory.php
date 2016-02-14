@@ -27,7 +27,7 @@ final class LoaderFactory implements LoaderFactoryInterface
      */
     public function factory(ParserInterface $parser, AccessorInterface $accessor, $class = null)
     {
-        $loaderClass = EnvLoader::class;
+        $loaderClass = NestedAllowedLoader::class;
         if (is_string($class) && is_subclass_of($class, self::CONTRACT)) {
             $loaderClass = $class;
         }

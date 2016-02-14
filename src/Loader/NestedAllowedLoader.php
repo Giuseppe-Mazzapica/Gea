@@ -20,8 +20,19 @@ use RuntimeException;
  * @license http://opensource.org/licenses/MIT MIT
  * @package Gea
  */
-final class EnvLoader implements LoaderInterface
+final class NestedAllowedLoader implements LoaderInterface
 {
+
+    /**
+     * @var \Gea\Parser\ParserInterface
+     */
+    private $parser;
+
+    /**
+     * @var \Gea\Accessor\AccessorInterface
+     */
+    private $accessor;
+
     /**
      * @var bool
      */
