@@ -65,7 +65,7 @@ final class ArrayFilter implements FilterInterface
 
         $array = explode($this->separator, $value);
         $this->trim and $array = array_map('trim', $array);
-        $this->walker and array_walk($array, $this->walker);
+        $this->walker and $array = array_map($this->walker, $array);
 
         return $array;
     }
