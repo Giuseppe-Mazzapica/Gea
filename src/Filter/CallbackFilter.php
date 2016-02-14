@@ -18,6 +18,7 @@ namespace Gea\Filter;
 final class CallbackFilter implements FilterInterface
 {
     const MODE_LAZY = 1;
+    const MODE_NOT_LAZY = 2;
 
     /**
      * @var callable
@@ -32,7 +33,6 @@ final class CallbackFilter implements FilterInterface
     /**
      * @param callable $callback
      * @param int      $flags
-     * @internal param bool $lazy
      */
     public function __construct(callable $callback, $flags = self::MODE_LAZY)
     {
