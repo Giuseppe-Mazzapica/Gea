@@ -13,9 +13,11 @@ namespace Gea;
 use Gea\Accessor\CompositeAccessor;
 use Gea\Accessor\AccessorInterface;
 use Gea\Accessor\CachedFilteredAccessor;
+use Gea\Accessor\CompositeReadOnlyAccessor;
 use Gea\Accessor\FilteredAccessorInterface;
 use Gea\Filter\FilterFactory;
 use Gea\Filter\FilterFactoryInterface;
+use Gea\Loader\DummyLoader;
 use Gea\Loader\LoaderFactory;
 use Gea\Loader\LoaderFactoryInterface;
 use Gea\Loader\LoaderInterface;
@@ -28,9 +30,13 @@ use Gea\Parser\FileParser;
  */
 class Gea implements \ArrayAccess
 {
-    const HOLD_VAR_NAMES = 1;
-    const FLUSH_SOFT     = 0;
-    const FLUSH_HARD     = 1;
+
+    const VAR_NAMES_HOLD     = 1;
+    const VAR_NAMES_NOT_HOLD = 2;
+    const NO_LOADER          = 128;
+    const READ_ONLY          = 256;
+    const FLUSH_SOFT         = 0;
+    const FLUSH_HARD         = 1;
 
     /**
      * @var \Gea\Accessor\FilteredAccessorInterface
@@ -68,40 +74,104 @@ class Gea implements \ArrayAccess
      * configuration.
      *
      * @param  string                             $dir
-     * @param  \Gea\Accessor\AccessorInterface    $accessor
-     * @param  int                                $flags
      * @param  string                             $filename
+     * @param  int                                $flags
+     * @param  \Gea\Accessor\AccessorInterface    $accessor
      * @param  \Gea\Filter\FilterFactoryInterface $filterFactory
      * @param  \Gea\Loader\LoaderFactoryInterface $loaderFactory
      * @return static
      */
     public function instance(
         $dir,
-        AccessorInterface $accessor = null,
-        $flags = 0,
         $filename = '.env',
+        $flags = self::VAR_NAMES_NOT_HOLD,
+        AccessorInterface $accessor = null,
         FilterFactoryInterface $filterFactory = null,
         LoaderFactoryInterface $loaderFactory = null
     ) {
         $dir = is_string($dir) ? trim($dir, '/\\') : '';
         $filename = is_string($filename) ? trim($filename, '/\\') : '';
         $realpath = $dir && $filename ? realpath("{$dir}/{$filename}") : false;
-        if (! $realpath) {
+        if ( ! $realpath) {
             throw new \InvalidArgumentException(
                 sprintf('Please provide a valid path for environment file.', $dir)
             );
         }
+        if ($flags & self::READ_ONLY && is_null($accessor)) {
+            $accessor = new CompositeReadOnlyAccessor();
+        } elseif(is_null($accessor)) {
+            $accessor = new CompositeAccessor();
+        }
 
-        is_null($accessor) and $accessor = new CompositeAccessor();
-        $accessor instanceof CachedFilteredAccessor or $accessor = new CachedFilteredAccessor($accessor);
+        $accessor instanceof FilteredAccessorInterface or $accessor = new CachedFilteredAccessor($accessor);
 
-        $parser = new FileParser($realpath);
-
+        is_null($filterFactory) and $filterFactory = new FilterFactory();
         is_null($loaderFactory) and $loaderFactory = new LoaderFactory();
 
-        $loader = $loaderFactory->factory($parser, $accessor);
+        $loader = $loaderFactory->factory(new FileParser($realpath), $accessor);
 
         return new static($accessor, $loader, $flags, $filterFactory);
+    }
+
+    /**
+     * A named constructor for instances that does not load variables.
+     *
+     * In production you can load env variables in different ways than env file.
+     * The instance of Gea obtained with this method, allow to access values using all the sugars
+     * Gea provides (like filters), but without loading any file, or even expect env file is there.
+     * Applications can easily rely on a Gea instance everywhere and then use a "fully featured"
+     * instance on development and a read-only instance on production.
+     *
+     * @param  \Gea\Accessor\AccessorInterface    $accessor
+     * @param  \Gea\Filter\FilterFactoryInterface $filterFactory
+     * @param int                                 $flags
+     * @return static
+     */
+    public function noLoaderInstance(
+        AccessorInterface $accessor = null,
+        FilterFactoryInterface $filterFactory = null,
+        $flags = self::VAR_NAMES_NOT_HOLD
+    ) {
+        if ($flags & self::READ_ONLY && is_null($accessor)) {
+            $accessor = new CompositeReadOnlyAccessor();
+        } elseif(is_null($accessor)) {
+            $accessor = new CompositeAccessor();
+        }
+
+        $accessor instanceof FilteredAccessorInterface or $accessor = new CachedFilteredAccessor($accessor);
+
+        is_null($filterFactory) and $filterFactory = new FilterFactory();
+
+        $flags |= self::NO_LOADER;
+
+        return new static($accessor, new DummyLoader(), $flags, $filterFactory);
+    }
+
+    /**
+     * A named constructor for instances that does not load, write, and discard variables.
+     *
+     * Similar to noLoaderInstance() method, the instance returned by this method does not load any
+     * variable, but also ensure no variable can be written, edited or discarded.
+     *
+     * @param  \Gea\Accessor\AccessorInterface    $accessor
+     * @param  \Gea\Filter\FilterFactoryInterface $filterFactory
+     * @param int                                 $flags
+     * @return static
+     */
+    public function readOnlyInstance(
+        AccessorInterface $accessor = null,
+        FilterFactoryInterface $filterFactory = null,
+        $flags = self::VAR_NAMES_NOT_HOLD
+    ) {
+        is_null($accessor) and $accessor = new CompositeReadOnlyAccessor();
+        $accessor instanceof FilteredAccessorInterface or $accessor = new CachedFilteredAccessor($accessor);
+
+        is_null($filterFactory) and $filterFactory = new FilterFactory();
+
+        $flags |= self::NO_LOADER;
+        $flags |= self::READ_ONLY;
+
+        return new static($accessor, new DummyLoader(), $flags, $filterFactory);
     }
 
     /**
@@ -115,13 +185,13 @@ class Gea implements \ArrayAccess
     public function __construct(
         FilteredAccessorInterface $accessor,
         LoaderInterface $loader,
-        $flags = 0,
-        FilterFactoryInterface $filterFactory = null
+        $flags,
+        FilterFactoryInterface $filterFactory
     ) {
         $this->accessor = $accessor;
         $this->loader = $loader;
         $this->flags = is_int($flags) ? $flags : 0;
-        $this->filterFactory = $filterFactory ?: new FilterFactory();
+        $this->filterFactory = $filterFactory;
     }
 
     /**
@@ -133,23 +203,22 @@ class Gea implements \ArrayAccess
      */
     public function addFilter($name, $filter)
     {
-        if (! is_string($filter) && ! is_array($filter)) {
-            throw new \InvalidArgumentException('Filter(s) id(s) must be a string or an array of strings.');
+        if ($this->loader->loaded() && ! ($this->flags & self::NO_LOADER)) {
+            throw new \BadMethodCallException('Filters can be added only before loading value.');
+        }
+
+        $badFilter = 'Filter names must be in a string or an array of strings.';
+
+        if ( ! is_string($filter) && ! is_array($filter)) {
+            throw new \InvalidArgumentException($badFilter);
         }
 
         $toRun = [];
+        $filter = (array) $filter;
 
-        if (is_string($filter)) {
-            $toRun = $this->handleFilter($filter, [], $name);
-            // apply non-lazy filter immediately
-            empty($toRun) or $this->read($name);
-
-            return $this;
-        }
-
-        array_walk($filter, function ($args, $key, $name) use (&$toRun) {
-            if (! is_string($args) && ! (is_array($args) && is_string($key))) {
-                throw new \InvalidArgumentException('Filter(s) id(s) must be a string or an array of strings.');
+        array_walk($filter, function ($args, $key, $name) use (&$toRun, $badFilter) {
+            if ( ! is_string($args) && ! (is_array($args) && is_string($key))) {
+                throw new \InvalidArgumentException($badFilter);
             }
             $filterName = is_string($args) ? $args : $key;
             $filterArgs = is_string($args) ? [] : $args;
@@ -170,7 +239,7 @@ class Gea implements \ArrayAccess
     public function load()
     {
         $varNames = $this->loader->load();
-        ($this->flags & self::HOLD_VAR_NAMES) and $this->varNames = $varNames;
+        ($this->flags & self::VAR_NAMES_HOLD) and $this->varNames = $varNames;
 
         return $varNames;
     }
@@ -183,10 +252,18 @@ class Gea implements \ArrayAccess
      */
     public function varNames()
     {
-        if (! ($this->flags & self::HOLD_VAR_NAMES)) {
+        if ( ! ($this->flags & self::VAR_NAMES_HOLD)) {
             throw new \BadMethodCallException(
-                sprintf('To allow access to loaded var names set HOLD_VAR_NAMES flag in %s constructor.',
-                    __CLASS__)
+                sprintf(
+                    'Variable names can be accessed only when VAR_NAMES_HOLD flag is true.',
+                    __CLASS__
+                )
+            );
+        }
+
+        if (!$this->loader->loaded()) {
+            throw new \BadMethodCallException(
+                'Variable names can be retrieved only after variables are loaded.'
             );
         }
 
@@ -197,12 +274,13 @@ class Gea implements \ArrayAccess
      * Flush the instance (allowing to load another file), optionally discarding a set of variables
      * (allowing to change their value).
      *
-     * @param  int    $flags
-     * @param  array  $varNames
+     * @param  int   $flags
+     * @param  array $varNames
      * @return static
      */
     public function flush($flags = self::FLUSH_SOFT, array $varNames = [])
     {
+        $this->bailIfReadOnly(__METHOD__);
         $this->loader->flush();
         if ($flags && self::FLUSH_HARD) {
             $toFlush = $varNames ? $varNames : $this->varNames;
@@ -239,10 +317,13 @@ class Gea implements \ArrayAccess
      */
     public function write($name, $value = null)
     {
+        $this->bailIfReadOnly(__METHOD__);
+
         if (array_key_exists($name, $this->varNames)) {
             throw new \RuntimeException(
                 sprintf(
-                    'Variable %s can\'t be overwritten. You need to either discard or hard flush vars to change their value.',
+                    'Variable %s can\'t be overwritten. '
+                    .'You need to either discard or hard flush vars to change their value.',
                     $name
                 )
             );
@@ -250,7 +331,7 @@ class Gea implements \ArrayAccess
 
         $name = $this->accessor->write($name, $value);
 
-        if ($this->flags & self::HOLD_VAR_NAMES) {
+        if ($this->flags & self::VAR_NAMES_HOLD) {
             $this->varNames = array_merge($this->varNames, [$name]);
         }
 
@@ -265,6 +346,8 @@ class Gea implements \ArrayAccess
      */
     public function discard($name)
     {
+        $this->bailIfReadOnly(__METHOD__);
+
         $now = $this->read($name);
         is_null($now) or $this->accessor->discard($name);
 
@@ -285,6 +368,22 @@ class Gea implements \ArrayAccess
         $filter->isLazy() or $toRun[] = $name;
 
         return $toRun;
+    }
+
+    /**
+     * @param $method
+     */
+    private function bailIfReadOnly($method)
+    {
+        if ($this->flags & self::READ_ONLY) {
+            throw new \BadMethodCallException(
+                sprintf(
+                    'Impossible to run %s because %s is in read-only mode.',
+                    $method,
+                    __CLASS__
+                )
+            );
+        }
     }
 
     /**
