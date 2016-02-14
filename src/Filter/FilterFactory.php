@@ -10,11 +10,6 @@
 
 namespace Gea\Filter;
 
-use InvalidArgumentException;
-use LogicException;
-use ReflectionClass;
-use RuntimeException;
-
 /**
  * @author  Giuseppe Mazzapica <giuseppe.mazzapica@gmail.com>
  * @license http://opensource.org/licenses/MIT MIT
@@ -55,13 +50,13 @@ final class FilterFactory implements FilterFactoryInterface
     public function factory($name, array $args = [])
     {
         if (! is_string($name)) {
-            throw new InvalidArgumentException('Filter id must be in a string.');
+            throw new \InvalidArgumentException('Filter name must be in a string.');
         }
 
         $name = strtolower($name);
 
         if (! array_key_exists($name, $this->map)) {
-            throw new InvalidArgumentException(sprintf('%s is not a valid filter id.', $name));
+            throw new \InvalidArgumentException(sprintf('%s is not a valid filter name.', $name));
         }
 
         $class = $this->map[$name];
@@ -89,47 +84,51 @@ final class FilterFactory implements FilterFactoryInterface
     }
 
     /**
-     * @param  string                    $id
-     * @param  string                    $class
+     * @param  string $name
+     * @param  string $class
      * @return \Gea\Filter\FilterFactory
      */
-    public function addFilter($id, $class)
+    public function addFilter($name, $class)
     {
-        if (! is_string($id)) {
-            throw new InvalidArgumentException('Filter id must be in a string');
+        if (! is_string($name)) {
+            throw new \InvalidArgumentException('Filter name must be in a string');
         }
 
-        $id = strtolower($id);
-        if (array_key_exists($id, $this->map)) {
-            throw new RuntimeException(
-                sprintf('Filter %s can be set because already assigned to %s', $id, $this->map[$id])
-            );
-        }
-
-        if (! is_string($class)) {
-            throw new InvalidArgumentException(
-                sprintf('Filter class for filter %s must be in a string', $id)
-            );
-        }
-
-        if (! class_exists($class)) {
-            throw new RuntimeException(
-                sprintf('%s is not a class and can\'t be used for %s filter.', $class, $id)
-            );
-        }
-
-        if (! is_subclass_of($class, self::CONTRACT)) {
-            throw new LogicException(
+        $name = strtolower($name);
+        if (array_key_exists($name, $this->map)) {
+            throw new \RuntimeException(
                 sprintf(
-                    '%s does not implements %s and can\'t be used for %s filter.',
-                    $class,
-                    self::CONTRACT,
-                    $id
+                    'Filter name "%s" can\'t be set because already assigned to %s',
+                    $name,
+                    $this->map[$name]
                 )
             );
         }
 
-        $this->map[$id] = $class;
+        if (! is_string($class)) {
+            throw new \InvalidArgumentException(
+                sprintf('Filter class for filter "%s" must be in a string', $name)
+            );
+        }
+
+        if (! class_exists($class)) {
+            throw new \RuntimeException(
+                sprintf('"%s" is not a class and can\'t be used for "%s" filter.', $class, $name)
+            );
+        }
+
+        if (! is_subclass_of($class, self::CONTRACT)) {
+            throw new \LogicException(
+                sprintf(
+                    '"%s" does not implement "%s" and can\'t be used for "%s" filter.',
+                    $class,
+                    self::CONTRACT,
+                    $name
+                )
+            );
+        }
+
+        $this->map[$name] = $class;
 
         return $this;
     }
