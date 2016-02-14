@@ -30,12 +30,12 @@
   },
   "autoload": {
     "psr-4": {
-      "Ayika\\": "src/"
+      "Gea\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Ayika\\Tests\\": "tests/src/"
+      "Gea\\Tests\\": "tests/src/"
     }
   },
   "extra": {
