@@ -35,11 +35,11 @@ Highly inspired to [PHP Dotenv](https://github.com/vlucas/phpdotenv) by [Vance L
     - Validating Variables
     - Casting Variables
     - Custom Filters
+- [Development VS Production Environments](#development-vs-production-environments)
 - [Usage Notes](#usage-notes)
-  - Development VS Production Environments
   - Command Line Scripts
 - [Why Gea (instead of PHP Dotenv)](#why-gea-instead-of-php-dotenv)
-  - Differences between PHP dotenv and Gea
+  - Differences between PHP Dotenv and Gea
   - What stayed the same?
 - [Minimum Requirements](#minimum-requirements)
 - [Installation](#installation)
@@ -211,7 +211,7 @@ $gea->load(); // Exception!
 ### Load More Files
 
 Normally an application has just one `.env` file, but if in tests, or for whichever reason, you need to load environment
-variables from several files, just use a different instance of Gea:
+variables from several files, just use different instances of Gea:
 
 ```php
 Gea\Gea::instance(__DIR__, '.env-1')->load();
@@ -285,7 +285,7 @@ $gea->flush(Gea\Gea::HARD_FLUSH, ['FOO', 'BAR']);
 $gea->write("FOO", "I am the new FOO value");
 $gea->write("BAR", "I am the new BAR value");
 ```
-When no thirg argument is given (or it is an empty array) all variables are flushed.
+When no third argument is given (or it is an empty array) all variables are flushed.
 
 
 ## Access Names of Variables
@@ -310,11 +310,11 @@ var_dump( $name ); // "FOO"
 ### Make Gea Hold Variables Names
 
 By default, Gea instances does not store the names of the variables that have been set, but it is possible to do that,
-by using `Gea::HOLD_VAR_NAMES` as third argument to `Gea::instance()` method. After that, names can be accessed using
+by using `Gea::VAR_NAMES_HOLD` as third argument to `Gea::instance()` method. After that, names can be accessed using
 `varNames()` method:
 
 ```php
-$gea = Gea\Gea::instance(__DIR__, '.env', Gea\Gea::HOLD_VAR_NAMES);
+$gea = Gea\Gea::instance(__DIR__, '.env', Gea\Gea::VAR_NAMES_HOLD);
 $gea->load();
 
 $names = $gea->varNames();
@@ -413,7 +413,7 @@ However, is possible to combine these filters with `'required'` filter to ensure
 $gea->addFilter('DEBUG_ENABLED', 'bool');   
 $gea->addFilter('MAX_USERS', ['required', 'int']);
 $gea->addFilter('ADMIN_EMAIL', ['object' => [MyApp\EmailValueObject::class]);
-$gea->addFilter('USER_DATA', ['required', 'array', 'object' => ['ArrayObject']);
+$gea->addFilter('USER_DATA', ['required', 'array', ['object' => ['ArrayObject']]);
 ```
 
 In code above:
@@ -436,19 +436,31 @@ Gea allows to write custom filters (both lazy and non-lazy) extending `Gea\Filte
 -----
 
 
+# Development VS Production Environments
+
+Load and parse environment variables from `.env` files, is something that fits better development
+environments and generally should not be used in production.
+In production, the actual environment variables should be set so that there is no overhead of
+loading the `.env` file on each request.
+This can be achieved via automated deployment processes or set manually with many cloud hosts.
+
+However, it is possible to leverage Gea features like filtering, even in those production scenario,
+when there's no `.env` file at all.
+
+The easiest way is to do that it to get an instance of Gea using `Gea::noLoaderInstance()` method.
+
+The instance obtained does not try to load environment variables, but just assumes they are set in
+*some* way, and accesses them using the accessor class, that by default reads variables using 
+`getenv()` function and `$_ENV` and `$_SERVER` global variables.
+
+Using a custom accessor class, as usual, it is possible to read, write and discard variables in
+different ways. 
+
+
+-----
+
+
 # Usage Notes
-
-## Development VS Production Environments
-
-Load and parse environment variables from `.env` files, is something that fits better development environments and generally
-should not be used in production.
-In production, the actual environment variables should be set so that there is no overhead of loading the `.env` file on each request.
-This can be achieved via an automated deployment process with tools like Vagrant, chef, or Puppet, or can be set
-manually with cloud hosts like Pagodabox and Heroku.
-
-However, is possible to leverage Gea features like filtering, even in those production scenario, when there's no `.env`
-files at all: without calling `load()` Gea just assumes the variables are set in *some* way.
-
 
 ## Command Line Scripts
 
