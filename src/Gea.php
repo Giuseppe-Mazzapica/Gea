@@ -10,9 +10,9 @@
 
 namespace Gea;
 
-use Gea\Accessor\Accessor;
+use Gea\Accessor\CompositeAccessor;
 use Gea\Accessor\AccessorInterface;
-use Gea\Accessor\FilteredAccessor;
+use Gea\Accessor\CachedFilteredAccessor;
 use Gea\Accessor\FilteredAccessorInterface;
 use Gea\Filter\FilterFactory;
 use Gea\Filter\FilterFactoryInterface;
@@ -20,9 +20,6 @@ use Gea\Loader\LoaderFactory;
 use Gea\Loader\LoaderFactoryInterface;
 use Gea\Loader\LoaderInterface;
 use Gea\Parser\FileParser;
-use InvalidArgumentException;
-use LogicException;
-use RuntimeException;
 
 /**
  * @author  Giuseppe Mazzapica <giuseppe.mazzapica@gmail.com>
@@ -31,6 +28,10 @@ use RuntimeException;
  */
 class Gea implements \ArrayAccess
 {
+    const HOLD_VAR_NAMES = 1;
+    const FLUSH_SOFT     = 0;
+    const FLUSH_HARD     = 1;
+
     /**
      * @var \Gea\Accessor\FilteredAccessorInterface
      */
@@ -42,23 +43,23 @@ class Gea implements \ArrayAccess
     protected $loader;
 
     /**
-     * Gea stores the names of loaded variables when this is true
-     *
-     * @var bool
-     */
-    protected $holdNames;
-
-    /**
      * @var \Gea\Filter\FilterFactory
      */
     protected $filterFactory;
 
     /**
-     * All the names of loaded variables, when hold names is enabled
+     * All the names of loaded variables, when hold names is enabled.
      *
      * @var array
      */
     protected $varNames = [];
+
+    /**
+     * Bitmask of configuration flags.
+     *
+     * @var int
+     */
+    protected $flags;
 
     /**
      * A named constructor.
@@ -68,7 +69,7 @@ class Gea implements \ArrayAccess
      *
      * @param  string                             $dir
      * @param  \Gea\Accessor\AccessorInterface    $accessor
-     * @param  bool                               $holdNames
+     * @param  int                                $flags
      * @param  string                             $filename
      * @param  \Gea\Filter\FilterFactoryInterface $filterFactory
      * @param  \Gea\Loader\LoaderFactoryInterface $loaderFactory
@@ -77,30 +78,30 @@ class Gea implements \ArrayAccess
     public function instance(
         $dir,
         AccessorInterface $accessor = null,
-        $holdNames = true,
+        $flags = 0,
         $filename = '.env',
         FilterFactoryInterface $filterFactory = null,
         LoaderFactoryInterface $loaderFactory = null
     ) {
-        if (! is_string($dir) || ! is_string($filename)) {
-            throw new InvalidArgumentException('.env file folder and file id must be in a string.');
-        }
-
-        $realpath = realpath($dir);
+        $dir = is_string($dir) ? trim($dir, '/\\') : '';
+        $filename = is_string($filename) ? trim($filename, '/\\') : '';
+        $realpath = $dir && $filename ? realpath("{$dir}/{$filename}") : false;
         if (! $realpath) {
-            throw new InvalidArgumentException(sprintf('%s is not a valid folder.', $dir));
+            throw new \InvalidArgumentException(
+                sprintf('Please provide a valid path for environment file.', $dir)
+            );
         }
 
-        is_null($accessor) and $accessor = new Accessor();
-        $accessor instanceof FilteredAccessor or $accessor = new FilteredAccessor($accessor);
+        is_null($accessor) and $accessor = new CompositeAccessor();
+        $accessor instanceof CachedFilteredAccessor or $accessor = new CachedFilteredAccessor($accessor);
 
-        $parser = new FileParser($realpath.DIRECTORY_SEPARATOR.$filename);
+        $parser = new FileParser($realpath);
 
         is_null($loaderFactory) and $loaderFactory = new LoaderFactory();
 
         $loader = $loaderFactory->factory($parser, $accessor);
 
-        return new static($accessor, $loader, $holdNames, $filterFactory);
+        return new static($accessor, $loader, $flags, $filterFactory);
     }
 
     /**
@@ -108,18 +109,18 @@ class Gea implements \ArrayAccess
      *
      * @param \Gea\Accessor\FilteredAccessorInterface $accessor
      * @param \Gea\Loader\LoaderInterface             $loader
-     * @param bool                                    $holdNames
+     * @param int                                     $flags
      * @param \Gea\Filter\FilterFactoryInterface      $filterFactory
      */
     public function __construct(
         FilteredAccessorInterface $accessor,
         LoaderInterface $loader,
-        $holdNames = false,
+        $flags = 0,
         FilterFactoryInterface $filterFactory = null
     ) {
         $this->accessor = $accessor;
         $this->loader = $loader;
-        $this->holdNames = $holdNames;
+        $this->flags = is_int($flags) ? $flags : 0;
         $this->filterFactory = $filterFactory ?: new FilterFactory();
     }
 
@@ -133,7 +134,7 @@ class Gea implements \ArrayAccess
     public function addFilter($name, $filter)
     {
         if (! is_string($filter) && ! is_array($filter)) {
-            throw new InvalidArgumentException('Filter(s) id(s) must be a string or an array of strings.');
+            throw new \InvalidArgumentException('Filter(s) id(s) must be a string or an array of strings.');
         }
 
         $toRun = [];
@@ -148,7 +149,7 @@ class Gea implements \ArrayAccess
 
         array_walk($filter, function ($args, $key, $name) use (&$toRun) {
             if (! is_string($args) && ! (is_array($args) && is_string($key))) {
-                throw new InvalidArgumentException('Filter(s) id(s) must be a string or an array of strings.');
+                throw new \InvalidArgumentException('Filter(s) id(s) must be a string or an array of strings.');
             }
             $filterName = is_string($args) ? $args : $key;
             $filterArgs = is_string($args) ? [] : $args;
@@ -169,7 +170,7 @@ class Gea implements \ArrayAccess
     public function load()
     {
         $varNames = $this->loader->load();
-        $this->holdNames and $this->varNames = $varNames;
+        ($this->flags & self::HOLD_VAR_NAMES) and $this->varNames = $varNames;
 
         return $varNames;
     }
@@ -182,9 +183,10 @@ class Gea implements \ArrayAccess
      */
     public function varNames()
     {
-        if (! $this->holdNames) {
-            throw new LogicException(
-                'To allow access to loaded var names set $holdNames param to true in '.__CLASS__.' constructor.'
+        if (! ($this->flags & self::HOLD_VAR_NAMES)) {
+            throw new \BadMethodCallException(
+                sprintf('To allow access to loaded var names set HOLD_VAR_NAMES flag in %s constructor.',
+                    __CLASS__)
             );
         }
 
@@ -195,14 +197,14 @@ class Gea implements \ArrayAccess
      * Flush the instance (allowing to load another file), optionally discarding a set of variables
      * (allowing to change their value).
      *
-     * @param  bool   $hard
+     * @param  int    $flags
      * @param  array  $varNames
      * @return static
      */
-    public function flush($hard = false, array $varNames = [])
+    public function flush($flags = self::FLUSH_SOFT, array $varNames = [])
     {
         $this->loader->flush();
-        if ($hard) {
+        if ($flags && self::FLUSH_HARD) {
             $toFlush = $varNames ? $varNames : $this->varNames;
             $toFlush and array_walk($toFlush, [$this->accessor, 'discard']);
         }
@@ -238,7 +240,7 @@ class Gea implements \ArrayAccess
     public function write($name, $value = null)
     {
         if (array_key_exists($name, $this->varNames)) {
-            throw new RuntimeException(
+            throw new \RuntimeException(
                 sprintf(
                     'Variable %s can\'t be overwritten. You need to either discard or hard flush vars to change their value.',
                     $name
@@ -247,7 +249,10 @@ class Gea implements \ArrayAccess
         }
 
         $name = $this->accessor->write($name, $value);
-        $this->holdNames and $this->varNames = array_merge($this->varNames, [$name]);
+
+        if ($this->flags & self::HOLD_VAR_NAMES) {
+            $this->varNames = array_merge($this->varNames, [$name]);
+        }
 
         return $name;
     }
