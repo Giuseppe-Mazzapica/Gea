@@ -19,11 +19,13 @@ namespace Gea\Accessor;
 use RuntimeException;
 
 /**
+ * Accessor uses all of `$_ENV`, `$_SERVER` and `getenv` / `putenv` to retrieve and store variables.
+ *
  * @author  Giuseppe Mazzapica <giuseppe.mazzapica@gmail.com>
  * @license http://opensource.org/licenses/MIT MIT
  * @package Gea
  */
-final class Accessor implements AccessorInterface
+final class CompositeAccessor implements AccessorInterface
 {
     /**
      * @inheritdoc
