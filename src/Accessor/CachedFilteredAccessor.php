@@ -18,7 +18,7 @@ use Gea\Filter\FilterInterface;
  * @license http://opensource.org/licenses/MIT MIT
  * @package Gea
  */
-final class FilteredAccessor implements FilteredAccessorInterface
+final class CachedFilteredAccessor implements FilteredAccessorInterface
 {
     /**
      * @var array
@@ -29,6 +29,11 @@ final class FilteredAccessor implements FilteredAccessorInterface
      * @var \Gea\Accessor\AccessorInterface
      */
     private $accessor;
+
+    /**
+     * @var array
+     */
+    private $cache = [];
 
     /**
      * @param \Gea\Accessor\AccessorInterface $accessor
@@ -57,19 +62,28 @@ final class FilteredAccessor implements FilteredAccessorInterface
      */
     public function read($name)
     {
+        if (isset($this->cache[$name])) {
+            return $this->cache[$name];
+        }
+
         $value = $this->accessor->read($name);
 
         if (array_key_exists($name, $this->filters)) {
             try {
-                $value = @array_reduce($this->filters[$name],
+                $value = @array_reduce(
+                    $this->filters[$name],
                     function ($carry, FilterInterface $filter) {
                         return $filter->filter($carry);
-                    }, $value);
+                    },
+                    $value
+                );
             } catch (FilterException $e) {
                 $message = str_replace(':name', $name, $e->getMessage());
                 throw new FilterException($message, $e->getCode(), $e);
             }
         }
+
+        $this->cache[$name] = $value;
 
         return $value;
     }
@@ -80,6 +94,10 @@ final class FilteredAccessor implements FilteredAccessorInterface
      */
     public function write($name, $value = null)
     {
+        if (isset($this->cache[$name])) {
+            unset($this->cache[$name]);
+        }
+        
         return $this->accessor->write($name, $value);
     }
 
@@ -89,6 +107,10 @@ final class FilteredAccessor implements FilteredAccessorInterface
      */
     public function discard($var)
     {
+        if (isset($this->cache[$var])) {
+            unset($this->cache[$var]);
+        }
+
         return $this->accessor->discard($var);
     }
 }
