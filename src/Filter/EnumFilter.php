@@ -21,6 +21,7 @@ final class EnumFilter implements FilterInterface
 {
     use LazyFilterTrait;
 
+    const MODE_NOT_STRICT = 0;
     const MODE_STRICT = 1;
 
     /**
