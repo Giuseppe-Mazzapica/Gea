@@ -60,6 +60,10 @@ final class CompositeAccessor implements AccessorInterface
     {
         $now = $this->read($name);
 
+        if (is_null($value)) {
+            return $this->discard($name);
+        }
+
         if (! is_null($now)) {
             throw new \RuntimeException(
                 sprintf(
