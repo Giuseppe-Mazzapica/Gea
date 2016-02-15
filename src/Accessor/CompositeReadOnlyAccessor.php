@@ -59,7 +59,7 @@ final class CompositeReadOnlyAccessor implements AccessorInterface
     /**
      * Disabled because read-only
      *
-     * @param  string      $name
+     * @param  string $name
      * @return void
      */
     public function discard($name)

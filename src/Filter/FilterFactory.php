@@ -84,8 +84,8 @@ final class FilterFactory implements FilterFactoryInterface
     }
 
     /**
-     * @param  string $name
-     * @param  string $class
+     * @param  string                    $name
+     * @param  string                    $class
      * @return \Gea\Filter\FilterFactory
      */
     public function addFilter($name, $class)

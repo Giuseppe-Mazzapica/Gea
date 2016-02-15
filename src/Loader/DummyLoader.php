@@ -17,7 +17,6 @@ namespace Gea\Loader;
  */
 final class DummyLoader implements LoaderInterface
 {
-
     /**
      * Do nothing. Variables are assumed to set in any way.
      *
@@ -43,9 +42,9 @@ final class DummyLoader implements LoaderInterface
      * Don't throw any exception, because mainly intended to be used in production environments.
      *
      * @return void
+     * @codeCoverageIgnore
      */
     public function flush()
     {
-
     }
 }

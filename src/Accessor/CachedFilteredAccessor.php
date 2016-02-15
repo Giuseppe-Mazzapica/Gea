@@ -97,7 +97,7 @@ final class CachedFilteredAccessor implements FilteredAccessorInterface
         if (isset($this->cache[$name])) {
             unset($this->cache[$name]);
         }
-        
+
         return $this->accessor->write($name, $value);
     }
 
