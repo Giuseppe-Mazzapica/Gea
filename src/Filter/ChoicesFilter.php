@@ -31,6 +31,18 @@ final class ChoicesFilter implements FilterInterface
      */
     private $allowed = [];
 
+    /**
+     * @param  array                     $args
+     * @return \Gea\Filter\ChoicesFilter
+     */
+    public static function fromArray(array $args)
+    {
+        $instance = new static();
+        $instance->allowed = $args;
+
+        return $instance;
+    }
+
     public function __construct()
     {
         $this->allowed = func_get_args();

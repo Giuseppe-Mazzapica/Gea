@@ -20,9 +20,18 @@ use Gea\Tests\TestCase;
  */
 class EnumFilterTest extends TestCase
 {
-    public function testFilterStrict()
+    public function testFilter()
     {
         $filter = new EnumFilter('foo', '1', 2);
+
+        assertSame('foo', $filter->filter('foo'));
+        assertSame('1', $filter->filter('1'));
+        assertSame(2, $filter->filter(2));
+    }
+
+    public function testFilterFromArray()
+    {
+        $filter = EnumFilter::fromArray(['foo', '1', 2]);
 
         assertSame('foo', $filter->filter('foo'));
         assertSame('1', $filter->filter('1'));

@@ -20,9 +20,18 @@ use Gea\Tests\TestCase;
  */
 class ChoicesFilterTest extends TestCase
 {
-    public function testFilterStrict()
+    public function testFilter()
     {
         $filter = new ChoicesFilter('foo', '1', 2);
+
+        assertEquals('foo', $filter->filter('foo'));
+        assertEquals('1', $filter->filter(1));
+        assertEquals(2, $filter->filter('2'));
+    }
+
+    public function testFilterFromArray()
+    {
+        $filter = ChoicesFilter::fromArray(['foo', '1', 2]);
 
         assertEquals('foo', $filter->filter('foo'));
         assertEquals('1', $filter->filter(1));
