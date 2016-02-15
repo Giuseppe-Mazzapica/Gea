@@ -16,6 +16,8 @@
 
 namespace Gea\Accessor;
 
+use Gea\Exception\ImmutableWriteException;
+
 /**
  * Accessor uses all of `$_ENV`, `$_SERVER` and `getenv` / `putenv` to retrieve and store variables.
  *
@@ -65,12 +67,7 @@ final class CompositeAccessor implements AccessorInterface
         $now = $this->read($name);
 
         if (! is_null($now)) {
-            throw new \RuntimeException(
-                sprintf(
-                    'Variable %s can\'t be overwritten. You need either to discard or to hard-flush vars to change their value.',
-                    $name
-                )
-            );
+            throw ImmutableWriteException::forVarName($name);
         }
 
         putenv("{$name}={$value}");

@@ -16,6 +16,8 @@
 
 namespace Gea\Accessor;
 
+use Gea\Exception\ReadOnlyWriteException;
+
 /**
  * Accessor uses all of `$_ENV`, `$_SERVER` and `getenv` / `putenv` to retrieve and store variables.
  *
@@ -51,9 +53,7 @@ final class CompositeReadOnlyAccessor implements AccessorInterface
      */
     public function write($name, $value = null)
     {
-        throw new \BadMethodCallException(
-            sprintf('Can\'t write "%s" because %s is read-only.', $name, __CLASS__)
-        );
+        throw ReadOnlyWriteException::forVarName($name, 'write');
     }
 
     /**
@@ -64,8 +64,6 @@ final class CompositeReadOnlyAccessor implements AccessorInterface
      */
     public function discard($name)
     {
-        throw new \BadMethodCallException(
-            sprintf('Can\'t discard "%s" because %s is read-only.', $name, __CLASS__)
-        );
+        throw ReadOnlyWriteException::forVarName($name, 'discard');
     }
 }
