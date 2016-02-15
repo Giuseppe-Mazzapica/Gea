@@ -22,20 +22,10 @@ class EnumFilterTest extends TestCase
 {
     public function testFilterStrict()
     {
-        $filter = new EnumFilter(['foo', '1', 2], EnumFilter::MODE_STRICT);
+        $filter = new EnumFilter('foo', '1', 2);
 
         assertSame('foo', $filter->filter('foo'));
         assertSame('1', $filter->filter('1'));
-        assertSame(2, $filter->filter(2));
-    }
-
-    public function testFilterNotStrict()
-    {
-        $filter = new EnumFilter(['foo', '1', 2], EnumFilter::MODE_NOT_STRICT);
-
-        assertSame('1', $filter->filter('1'));
-        assertSame(1, $filter->filter(1));
-        assertSame('2', $filter->filter('2'));
         assertSame(2, $filter->filter(2));
     }
 
@@ -44,7 +34,7 @@ class EnumFilterTest extends TestCase
      */
     public function testFilterException()
     {
-        $filter = new EnumFilter(['foo', '1', 2], EnumFilter::MODE_STRICT);
+        $filter = new EnumFilter('foo', '1', 2);
         $filter->filter(1);
     }
 

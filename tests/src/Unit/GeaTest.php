@@ -136,7 +136,7 @@ class GeaTest extends TestCase
 
         $accessor = \Mockery::mock(FilteredAccessorInterface::class);
         $accessor->shouldReceive('addFilter')
-                 ->with('foo', $filter)
+                 ->with('the_name', $filter)
                  ->andReturnNull();
 
         $loader = \Mockery::mock(LoaderInterface::class);
@@ -165,7 +165,7 @@ class GeaTest extends TestCase
 
         $accessor = \Mockery::mock(FilteredAccessorInterface::class);
         $accessor->shouldReceive('addFilter')
-                 ->with('foo', $filter)
+                 ->with('the_name', $filter)
                  ->andReturnNull();
 
         $loader = \Mockery::mock(LoaderInterface::class);
@@ -198,11 +198,16 @@ class GeaTest extends TestCase
 
         $accessor = \Mockery::mock(FilteredAccessorInterface::class);
         $accessor->shouldReceive('addFilter')
-                 ->with('foo', $filterFoo)
-                 ->andReturnNull();
+            ->once()
+            ->with('a', $filterFoo)
+            ->andReturnNull();
         $accessor->shouldReceive('addFilter')
-                 ->with('bar', $filterBar)
-                 ->andReturnNull();
+            ->once()
+            ->with('b', $filterFoo)
+            ->andReturnNull();
+        $accessor->shouldReceive('addFilter')
+            ->with('b', $filterBar)
+            ->andReturnNull();
 
         static $loaded = null;
         $loader = \Mockery::mock(LoaderInterface::class);
