@@ -17,6 +17,8 @@ namespace Gea\Loader;
  */
 final class DummyLoader implements LoaderInterface
 {
+    private $loaded = false;
+
     /**
      * Do nothing. Variables are assumed to set in any way.
      *
@@ -24,6 +26,8 @@ final class DummyLoader implements LoaderInterface
      */
     public function load()
     {
+        $this->loaded or $this->loaded = true;
+
         return [];
     }
 
@@ -34,7 +38,7 @@ final class DummyLoader implements LoaderInterface
      */
     public function loaded()
     {
-        return true;
+        return $this->loaded;
     }
 
     /**
