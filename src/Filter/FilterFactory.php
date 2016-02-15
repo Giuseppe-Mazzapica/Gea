@@ -25,8 +25,10 @@ final class FilterFactory implements FilterFactoryInterface
     private static $defaultMap = [
         'array'    => ArrayFilter::class,
         'bool'     => BoolFilter::class,
+        'callback' => CallbackFilter::class,
         'enum'     => EnumFilter::class,
         'float'    => FloatFilter::class,
+        'int'      => IntFilter::class,
         'object'   => ObjectFilter::class,
         'required' => RequiredFilter::class,
     ];
