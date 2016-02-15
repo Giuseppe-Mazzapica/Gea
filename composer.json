@@ -4,8 +4,13 @@
   "description": "Loads environment variables from `.env` to `getenv()`, `$_ENV` and `$_SERVER`.",
   "keywords": [
     "env",
+    ".env",
+    "env var",
     "dotenv",
-    "environment"
+    "php dotenv",
+    "environment",
+    "environment variables",
+    "environment var"
   ],
   "homepage": "http://github.com/Giuseppe-Mazzapica/Gea",
   "license": "MIT",
