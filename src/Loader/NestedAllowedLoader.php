@@ -13,7 +13,6 @@ namespace Gea\Loader;
 use Gea\Accessor\AccessorInterface;
 use Gea\Parser\ParserInterface;
 use Gea\Variable\VariableInterface;
-use RuntimeException;
 
 /**
  * @author  Giuseppe Mazzapica <giuseppe.mazzapica@gmail.com>
@@ -22,7 +21,6 @@ use RuntimeException;
  */
 final class NestedAllowedLoader implements LoaderInterface
 {
-
     /**
      * @var \Gea\Parser\ParserInterface
      */
@@ -54,7 +52,7 @@ final class NestedAllowedLoader implements LoaderInterface
     public function load()
     {
         if ($this->loaded) {
-            throw new RuntimeException(
+            throw new \RuntimeException(
                 'Variables already loaded, to override variables, flush existing vars first.'
             );
         }
@@ -62,21 +60,20 @@ final class NestedAllowedLoader implements LoaderInterface
         $nested = $names = [];
         $parsed = $this->parser->parse();
 
-        array_walk($parsed, function (VariableInterface $info) use (&$nested, &$names) {
-            $valid = $info->isValid();
-            if ($valid && $info->isNested()) {
-                $nested[] = $info;
+        array_walk($parsed, function (VariableInterface $var) use (&$nested, &$names) {
+            $valid = $var->isValid();
+            if ($valid && $var->isNested()) {
+                $nested[] = $var;
             } elseif ($valid) {
-                $this->accessor->write($info['name'], $info['value']);
-                $names[] = $info['name'];
+                $this->accessor->write($var['name'], $var['value']);
+                $names[] = $var['name'];
             }
         });
 
-        array_walk($nested, function (VariableInterface $info) use (&$names, &$instance) {
+        array_walk($nested, function (VariableInterface $info) use (&$names) {
             $value = array_reduce($info['nested'], [$this, 'resolveNested'], $info['value']);
             $this->accessor->write($info['name'], $value);
             $names[] = $info['name'];
-
         });
 
         $this->loaded = true;
