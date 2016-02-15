@@ -46,7 +46,7 @@ class CompositeAccessorTest extends TestCase
     }
 
     /**
-     * @expectedException \RuntimeException
+     * @expectedException \Gea\Exception\ImmutableWriteException
      */
     public function testWriteImmutable()
     {
@@ -62,7 +62,7 @@ class CompositeAccessorTest extends TestCase
     }
 
     /**
-     * @expectedException \RuntimeException
+     * @expectedException \Gea\Exception\ImmutableWriteException
      */
     public function testWriteImmutableNoConsecutive()
     {

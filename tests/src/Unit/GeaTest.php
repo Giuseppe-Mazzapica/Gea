@@ -336,8 +336,7 @@ class GeaTest extends TestCase
     }
 
     /**
-     * @expectedException \BadMethodCallException
-     * @expectedExceptionMessageRegExp /read-only/
+     * @expectedException \Gea\Exception\ReadOnlyWriteException
      */
     public function testFlushFailsIfReadOnly()
     {
@@ -434,8 +433,7 @@ class GeaTest extends TestCase
     }
 
     /**
-     * @expectedException \BadMethodCallException
-     * @expectedExceptionMessageRegExp /read-only/
+     * @expectedException \Gea\Exception\ReadOnlyWriteException
      */
     public function testWriteFailsIfReadOnly()
     {
@@ -448,8 +446,7 @@ class GeaTest extends TestCase
     }
 
     /**
-     * @expectedException \RuntimeException
-     * @expectedExceptionMessageRegExp /overwritten/
+     * @expectedException \Gea\Exception\ImmutableWriteException
      */
     public function testWriteFailsIfAlreadyWritten()
     {
@@ -503,8 +500,7 @@ class GeaTest extends TestCase
     }
 
     /**
-     * @expectedException \BadMethodCallException
-     * @expectedExceptionMessageRegExp /read-only/
+     * @expectedException \Gea\Exception\ReadOnlyWriteException
      */
     public function testDiscardFailsIfReadOnly()
     {

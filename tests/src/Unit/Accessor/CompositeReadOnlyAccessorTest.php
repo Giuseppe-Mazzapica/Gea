@@ -46,8 +46,7 @@ class CompositeReadOnlyAccessorTest extends TestCase
     }
 
     /**
-     * @expectedException \BadMethodCallException
-     * @expectedExceptionMessageRegExp /read-only/
+     * @expectedException \Gea\Exception\ReadOnlyWriteException
      */
     public function testWriteDisabled()
     {
@@ -56,8 +55,7 @@ class CompositeReadOnlyAccessorTest extends TestCase
     }
 
     /**
-     * @expectedException \BadMethodCallException
-     * @expectedExceptionMessageRegExp /read-only/
+     * @expectedException \Gea\Exception\ReadOnlyWriteException
      */
     public function testDiscardDisabled()
     {

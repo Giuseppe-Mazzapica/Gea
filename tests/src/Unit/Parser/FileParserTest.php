@@ -51,15 +51,13 @@ class FileParserTest extends TestCase
                 return trim($line);
             });
 
-        $path = getenv('GEA_TESTS_FIXTURES_PATH').'/.env';
-
-        $parser = new FileParser($path, $lineParser);
+        $parser = new FileParser(getenv('GEA_TESTS_FIXTURES_PATH').'/.env', $lineParser);
         $parsed = $parser->parse();
 
         $expected = [
             'FOO=bar',
             'BAR=baz',
-            'SPACED=with spaces',
+            'SPACED="with spaces"',
             'NULL=',
         ];
 

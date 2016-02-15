@@ -180,7 +180,7 @@ class DotenvLineParserTest extends TestCase
         assertInstanceOf(Variable::class, $var);
         assertTrue($var->isValid());
         assertSame('FOO', $var['name']);
-        assertNull($var['value']);
+        assertSame('', $var['value']);
         assertFalse($var->isNested());
     }
 
