@@ -78,7 +78,7 @@ final class FilterFactory implements FilterFactoryInterface
                 return new $class($args[0], $args[1], $args[2], $args[3]);
         }
 
-        $ref = new ReflectionClass($class);
+        $ref = new \ReflectionClass($class);
 
         return $ref->newInstanceArgs($args);
     }
