@@ -27,6 +27,7 @@ final class FilterFactory implements FilterFactoryInterface
         'bool'     => BoolFilter::class,
         'callback' => CallbackFilter::class,
         'enum'     => EnumFilter::class,
+        'choices'  => ChoicesFilter::class,
         'float'    => FloatFilter::class,
         'int'      => IntFilter::class,
         'object'   => ObjectFilter::class,

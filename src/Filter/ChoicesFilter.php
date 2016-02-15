@@ -17,7 +17,7 @@ use Gea\Exception\FilterException;
  * @license http://opensource.org/licenses/MIT MIT
  * @package Gea
  */
-final class EnumFilter implements FilterInterface
+final class ChoicesFilter implements FilterInterface
 {
     use LazyFilterTrait;
 
@@ -41,7 +41,7 @@ final class EnumFilter implements FilterInterface
      */
     public function filter($value)
     {
-        if (! in_array($value, $this->allowed, true)) {
+        if (! in_array($value, $this->allowed, false)) {
             throw new FilterException(':name value is not allowed.');
         }
 
