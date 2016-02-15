@@ -8,7 +8,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Gea\Tests\Accessor;
+namespace Gea\Tests\Unit\Accessor;
 
 use Gea\Accessor\CompositeAccessor;
 use Gea\Tests\TestCase;
@@ -18,7 +18,7 @@ use Gea\Tests\TestCase;
  * @license http://opensource.org/licenses/MIT MIT
  * @package Gea
  */
-class AccessorTest extends TestCase
+class CompositeAccessorTest extends TestCase
 {
     private function cleanUp($vars)
     {

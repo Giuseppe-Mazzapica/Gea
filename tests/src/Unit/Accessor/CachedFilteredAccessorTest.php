@@ -8,7 +8,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Gea\Tests\Accessor;
+namespace Gea\Tests\Unit\Accessor;
 
 use Andrew\Proxy;
 use Gea\Accessor\CachedFilteredAccessor;
@@ -23,7 +23,7 @@ use Mockery;
  * @license http://opensource.org/licenses/MIT MIT
  * @package Gea
  */
-class FilteredAccessorTest extends TestCase
+class CachedFilteredAccessorTest extends TestCase
 {
     public function testAddFilter()
     {
@@ -72,6 +72,7 @@ class FilteredAccessorTest extends TestCase
         $filtered = new CachedFilteredAccessor($accessor);
 
         $proxy = new Proxy($filtered);
+        /** @noinspection PhpUndefinedFieldInspection */
         $proxy->filters = ['FOO' => [$filter]];
 
         $filtered->read('FOO');
@@ -121,5 +122,23 @@ class FilteredAccessorTest extends TestCase
             ->addFilter('vowels', $filterI);
 
         assertSame('Vowels: A, E, I.', $filtered->read('vowels'));
+    }
+
+    public function testReadIsCached()
+    {
+        /** @var \Gea\Accessor\AccessorInterface|\Mockery\MockInterface $accessor */
+        $accessor = Mockery::mock(AccessorInterface::class);
+        $accessor
+            ->shouldReceive('read')
+            ->once()
+            ->with('foo')
+            ->andReturn('Foo!');
+
+        $filtered = new CachedFilteredAccessor($accessor);
+        $foo1 = $filtered->read('foo');
+        $foo2 = $filtered->read('foo');
+
+        assertSame($foo1, $foo2);
+        assertSame('Foo!', $foo1);
     }
 }
