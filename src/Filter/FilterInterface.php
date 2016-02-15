@@ -23,8 +23,8 @@ interface FilterInterface
     public function isLazy();
 
     /**
-     * @param string $value
-     * @return
+     * @param  string $value
+     * @return mixed
      */
     public function filter($value);
 }

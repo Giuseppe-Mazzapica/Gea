@@ -48,7 +48,7 @@ class Gea implements \ArrayAccess
     protected $loader;
 
     /**
-     * @var \Gea\Filter\FilterFactory
+     * @var \Gea\Filter\FilterFactoryInterface
      */
     protected $filterFactory;
 
