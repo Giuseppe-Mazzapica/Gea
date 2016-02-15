@@ -69,7 +69,6 @@ class GeaTest extends TestCase
         $filterFactory = \Mockery::mock(FilterFactoryInterface::class);
 
         $gea = new Gea($accessor, $loader, Gea::VAR_NAMES_NOT_HOLD, $filterFactory);
-
         $gea->addFilter('foo', new \stdClass());
     }
 
@@ -237,6 +236,25 @@ class GeaTest extends TestCase
 
         assertSame($gea, $added);
         assertSame(['b'], $toRead);
+    }
+
+    public function testAddFilterFromFilter()
+    {
+        $filter = \Mockery::mock(FilterInterface::class);
+        $filter->shouldReceive('isLazy')->once()->andReturn(true);
+
+        $accessor = \Mockery::mock(FilteredAccessorInterface::class);
+        $accessor->shouldReceive('addFilter')->once()->with('foo', $filter)->andReturnNull();
+
+        $loader = \Mockery::mock(LoaderInterface::class);
+        $loader->shouldReceive('loaded')->andReturn(false, true);
+
+        $filterFactory = \Mockery::mock(FilterFactoryInterface::class);
+        $filterFactory->shouldReceive('factory')->never();
+
+        $gea = new Gea($accessor, $loader, Gea::VAR_NAMES_NOT_HOLD, $filterFactory);
+
+        assertSame($gea, $gea->addFilter('foo', $filter));
     }
 
     public function testLoadReturnLoadedVarsAndNotHold()

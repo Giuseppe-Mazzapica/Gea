@@ -225,14 +225,8 @@ class Gea implements \ArrayAccess
             throw new \InvalidArgumentException('Var name to be filtered must be in a string.');
         }
 
-        if (! is_string($filter) && ! is_array($filter)) {
-            throw new \InvalidArgumentException(
-                'Filter names must be in a string or an array of strings.'
-            );
-        }
-
         $toRun = [];
-        $filter = (array) $filter;
+        $filter = is_array($filter) ? $filter : [$filter];
 
         array_walk($filter, function ($args, $key, $name) use (&$toRun) {
             $toRun = $this->handleFilter($args, $key, $name, $toRun);
