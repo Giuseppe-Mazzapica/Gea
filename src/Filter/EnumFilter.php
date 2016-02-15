@@ -21,9 +21,6 @@ final class EnumFilter implements FilterInterface
 {
     use LazyFilterTrait;
 
-    const MODE_NOT_STRICT = 0;
-    const MODE_STRICT = 1;
-
     /**
      * @var bool
      */
@@ -32,21 +29,16 @@ final class EnumFilter implements FilterInterface
     /**
      * @var array
      */
-    private $allowed;
+    private $allowed = [];
 
     /**
      * @var bool
      */
-    private $strict;
+    private $strict = true;
 
-    /**
-     * @param array $allowed
-     * @param int   $flags
-     */
-    public function __construct(array $allowed, $flags = self::MODE_STRICT)
+    public function __construct()
     {
-        $this->allowed = $allowed;
-        $this->strict = is_int($flags) && ($flags & self::MODE_STRICT);
+        $this->allowed = func_get_args();
     }
 
     /**
