@@ -58,11 +58,11 @@ final class CompositeAccessor implements AccessorInterface
      */
     public function write($name, $value = null)
     {
-        $now = $this->read($name);
-
         if (is_null($value)) {
             return $this->discard($name);
         }
+
+        $now = $this->read($name);
 
         if (! is_null($now)) {
             throw new \RuntimeException(
