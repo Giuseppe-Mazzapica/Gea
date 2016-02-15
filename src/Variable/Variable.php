@@ -10,9 +10,6 @@
 
 namespace Gea\Variable;
 
-use InvalidArgumentException;
-use LogicException;
-
 /**
  * @author  Giuseppe Mazzapica <giuseppe.mazzapica@gmail.com>
  * @license http://opensource.org/licenses/MIT MIT
@@ -30,7 +27,7 @@ final class Variable implements VariableInterface
      */
     public function __construct(array $data)
     {
-        $this->data = $data;
+        $this->data = array_change_key_case($data, CASE_LOWER);
     }
 
     /**
@@ -38,7 +35,10 @@ final class Variable implements VariableInterface
      */
     public function isValid()
     {
-        return $this->offsetExists('name') && $this->offsetExists('value');
+        return
+            $this->offsetExists('name')
+            && $this->offsetExists('value')
+            && is_string($this->offsetGet('name'));
     }
 
     /**
@@ -54,7 +54,7 @@ final class Variable implements VariableInterface
      */
     public function offsetExists($offset)
     {
-        return is_string($offset) && array_key_exists($offset, $this->data);
+        return is_string($offset) && array_key_exists(strtolower($offset), $this->data);
     }
 
     /**
@@ -63,10 +63,10 @@ final class Variable implements VariableInterface
     public function offsetGet($offset)
     {
         if (! $this->offsetExists($offset)) {
-            throw new InvalidArgumentException(sprintf('Invalid offset for %s', __CLASS__));
+            throw new \LogicException(sprintf('Invalid offset for %s', __CLASS__));
         }
 
-        return $this->data[$offset];
+        return $this->data[strtolower($offset)];
     }
 
     /**
@@ -74,7 +74,7 @@ final class Variable implements VariableInterface
      */
     public function offsetSet($offset, $value)
     {
-        throw new LogicException(sprintf('%s is immutable.', __CLASS__));
+        throw new \BadMethodCallException(sprintf('%s is immutable.', __CLASS__));
     }
 
     /**
@@ -82,6 +82,6 @@ final class Variable implements VariableInterface
      */
     public function offsetUnset($offset)
     {
-        throw new LogicException(sprintf('%s is immutable.', __CLASS__));
+        throw new \BadMethodCallException(sprintf('%s is immutable.', __CLASS__));
     }
 }
