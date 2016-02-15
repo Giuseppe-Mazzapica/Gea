@@ -67,9 +67,7 @@ final class DotenvLineParser implements LineParserInterface
             return new Variable([]); // invalid variable
         }
 
-        if (! empty($rawValue)) {
-            $value = $this->sanitiseValue($rawValue);
-        }
+        $value = empty($rawValue) ? '' : $this->sanitiseValue($rawValue);
 
         return $this->varFactory->factory($name, $value);
     }
