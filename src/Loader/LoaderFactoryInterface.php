@@ -20,6 +20,8 @@ use Gea\Parser\ParserInterface;
  */
 interface LoaderFactoryInterface
 {
+    const CONTRACT = LoaderInterface::class;
+
     /**
      * @param  \Gea\Parser\ParserInterface     $parser
      * @param  \Gea\Accessor\AccessorInterface $accessor

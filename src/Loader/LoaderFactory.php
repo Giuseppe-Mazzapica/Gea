@@ -20,17 +20,15 @@ use Gea\Parser\ParserInterface;
  */
 final class LoaderFactory implements LoaderFactoryInterface
 {
-    const CONTRACT = LoaderInterface::class;
-
     /**
      * @inheritdoc
      */
     public function factory(ParserInterface $parser, AccessorInterface $accessor, $class = null)
     {
         if (! is_string($class) || ! is_subclass_of($class, self::CONTRACT, true)) {
-            $loaderClass = NestedAllowedLoader::class;
+            $class = NestedAllowedLoader::class;
         }
 
-        return new $loaderClass($parser, $accessor);
+        return new $class($parser, $accessor);
     }
 }
