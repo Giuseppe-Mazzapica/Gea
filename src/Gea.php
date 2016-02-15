@@ -269,7 +269,7 @@ class Gea implements \ArrayAccess
             throw new \BadMethodCallException(
                 sprintf(
                     'Variable names can be accessed only when VAR_NAMES_HOLD flag is true.',
-                    __CLASS__
+                    get_called_class()
                 )
             );
         }
@@ -293,7 +293,7 @@ class Gea implements \ArrayAccess
      */
     public function flush($flags = self::FLUSH_SOFT, array $varNames = [])
     {
-        $this->bailIfReadOnly(__METHOD__);
+        $this->bailIfReadOnly(__FUNCTION__);
         $this->loader->flush();
         if ($flags && self::FLUSH_HARD) {
             $toFlush = $varNames ? $varNames : $this->varNames;
@@ -330,9 +330,9 @@ class Gea implements \ArrayAccess
      */
     public function write($name, $value = null)
     {
-        $this->bailIfReadOnly(__METHOD__);
+        $this->bailIfReadOnly(__FUNCTION__);
 
-        if (array_key_exists($name, $this->varNames)) {
+        if (in_array($name, $this->varNames, true)) {
             throw new \RuntimeException(
                 sprintf(
                     'Variable %s can\'t be overwritten. '
@@ -359,7 +359,7 @@ class Gea implements \ArrayAccess
      */
     public function discard($name)
     {
-        $this->bailIfReadOnly(__METHOD__);
+        $this->bailIfReadOnly(__FUNCTION__);
 
         $now = $this->read($name);
         is_null($now) or $this->accessor->discard($name);
@@ -374,7 +374,7 @@ class Gea implements \ArrayAccess
      * @param  array  $toRun
      * @return array
      */
-    private function handleFilter($id, array $args, $name, array $toRun = [])
+    protected function handleFilter($id, array $args, $name, array $toRun = [])
     {
         $filter = $this->filterFactory->factory($id, $args);
         $this->accessor->addFilter($id, $filter);
@@ -386,14 +386,14 @@ class Gea implements \ArrayAccess
     /**
      * @param $method
      */
-    private function bailIfReadOnly($method)
+    protected function bailIfReadOnly($method)
     {
         if ($this->flags & self::READ_ONLY) {
             throw new \BadMethodCallException(
                 sprintf(
-                    'Impossible to run %s because %s is in read-only mode.',
-                    $method,
-                    __CLASS__
+                    'Can\'t execute %1$s::%2$s() because %1$s is in read-only mode.',
+                    get_called_class(),
+                    $method
                 )
             );
         }
