@@ -15,8 +15,11 @@ use Gea\Accessor\AccessorInterface;
 use Gea\Accessor\CachedFilteredAccessor;
 use Gea\Accessor\CompositeReadOnlyAccessor;
 use Gea\Accessor\FilteredAccessorInterface;
+use Gea\Exception\ImmutableWriteException;
+use Gea\Exception\ReadOnlyWriteException;
 use Gea\Filter\FilterFactory;
 use Gea\Filter\FilterFactoryInterface;
+use Gea\Filter\FilterInterface;
 use Gea\Loader\DummyLoader;
 use Gea\Loader\LoaderFactory;
 use Gea\Loader\LoaderFactoryInterface;
@@ -46,6 +49,11 @@ class Gea implements \ArrayAccess
      * @var \Gea\Loader\LoaderInterface
      */
     protected $loader;
+
+    /**
+     * @var bool
+     */
+    protected $flushed = false;
 
     /**
      * @var \Gea\Filter\FilterFactoryInterface
@@ -217,22 +225,17 @@ class Gea implements \ArrayAccess
             throw new \InvalidArgumentException('Var name to be filtered must be in a string.');
         }
 
-        $badFilter = 'Filter names must be in a string or an array of strings.';
-
         if (! is_string($filter) && ! is_array($filter)) {
-            throw new \InvalidArgumentException($badFilter);
+            throw new \InvalidArgumentException(
+                'Filter names must be in a string or an array of strings.'
+            );
         }
 
         $toRun = [];
         $filter = (array) $filter;
 
-        array_walk($filter, function ($args, $key, $name) use (&$toRun, $badFilter) {
-            if (! is_string($args) && ! (is_array($args) && is_string($key))) {
-                throw new \InvalidArgumentException($badFilter);
-            }
-            $filterName = is_string($args) ? $args : $key;
-            $filterArgs = is_string($args) ? [] : $args;
-            $toRun = $this->handleFilter($filterName, $filterArgs, $name, $toRun);
+        array_walk($filter, function ($args, $key, $name) use (&$toRun) {
+            $toRun = $this->handleFilter($args, $key, $name, $toRun);
         }, $name);
 
         $this->toReadFirst = array_merge($this->toReadFirst, $toRun);
@@ -274,7 +277,7 @@ class Gea implements \ArrayAccess
             );
         }
 
-        if (!$this->loader->loaded()) {
+        if (! $this->loader->loaded() && ! $this->flushed) {
             throw new \BadMethodCallException(
                 'Variable names can be retrieved only after variables are loaded.'
             );
@@ -293,12 +296,14 @@ class Gea implements \ArrayAccess
      */
     public function flush($flags = self::FLUSH_SOFT, array $varNames = [])
     {
-        $this->bailIfReadOnly(__FUNCTION__);
+        $this->bailIfReadOnly([], 'flush');
+        $this->flushed = true;
         $this->loader->flush();
         if ($flags && self::FLUSH_HARD) {
             $toFlush = $varNames ? $varNames : $this->varNames;
             $toFlush and array_walk($toFlush, [$this->accessor, 'discard']);
         }
+
         $this->varNames = [];
 
         return $this;
@@ -314,7 +319,7 @@ class Gea implements \ArrayAccess
      */
     public function read($name)
     {
-        $this->loader->loaded() or $this->loader->load();
+        ($this->loader->loaded() || $this->flushed) or $this->load();
 
         return $this->accessor->read($name);
     }
@@ -330,16 +335,10 @@ class Gea implements \ArrayAccess
      */
     public function write($name, $value = null)
     {
-        $this->bailIfReadOnly(__FUNCTION__);
+        $this->bailIfReadOnly($name, 'write');
 
         if (in_array($name, $this->varNames, true)) {
-            throw new \RuntimeException(
-                sprintf(
-                    'Variable %s can\'t be overwritten. '
-                    .'You need to either discard or hard flush vars to change their value.',
-                    $name
-                )
-            );
+            throw ImmutableWriteException::forVarName($name);
         }
 
         $name = $this->accessor->write($name, $value);
@@ -359,44 +358,58 @@ class Gea implements \ArrayAccess
      */
     public function discard($name)
     {
-        $this->bailIfReadOnly(__FUNCTION__);
+        $this->bailIfReadOnly($name, 'discard');
 
         $now = $this->read($name);
-        is_null($now) or $this->accessor->discard($name);
+        if (! is_null($now)) {
+            $this->accessor->discard($name);
+            in_array($name, $this->varNames) and $this->varNames = array_diff($this->varNames,
+                [$name]);
+        }
 
         return $now;
     }
 
-    /**
-     * @param  string $id
-     * @param  array  $args
-     * @param  string $name
-     * @param  array  $toRun
-     * @return array
-     */
-    protected function handleFilter($id, array $args, $name, array $toRun = [])
+    protected function handleFilter($args, $key, $name, array $toRun = [])
     {
-        $filter = $this->filterFactory->factory($id, $args);
-        $this->accessor->addFilter($id, $filter);
+        $filter = null;
+
+        if ($args instanceof FilterInterface) {
+            $filter = $args;
+        } elseif (is_string($args) || (is_array($args) && is_string($key))) {
+            $filterName = is_string($args) ? $args : $key;
+            $filterArgs = is_string($args) ? [] : $args;
+
+            $filter = $this->filterFactory->factory($filterName, $filterArgs);
+        }
+
+        if (! $filter) {
+            throw new \InvalidArgumentException(
+                'Filter names must be in a string or an array of strings.'
+            );
+        }
+
+        $this->accessor->addFilter($name, $filter);
         $filter->isLazy() or $toRun[] = $name;
 
         return $toRun;
     }
 
     /**
-     * @param $method
+     * @param string $name
+     * @param string $method
      */
-    protected function bailIfReadOnly($method)
+    protected function bailIfReadOnly($name, $method)
     {
-        if ($this->flags & self::READ_ONLY) {
-            throw new \BadMethodCallException(
-                sprintf(
-                    'Can\'t execute %1$s::%2$s() because %1$s is in read-only mode.',
-                    get_called_class(),
-                    $method
-                )
-            );
+        if (! ($this->flags & self::READ_ONLY)) {
+            return;
         }
+
+        if (is_string($name)) {
+            throw ReadOnlyWriteException::forVarName($name, $method);
+        }
+
+        throw ReadOnlyWriteException::forVars($method);
     }
 
     /**
