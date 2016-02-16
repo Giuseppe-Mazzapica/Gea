@@ -137,15 +137,15 @@ class Gea implements \ArrayAccess
      * Applications can easily rely on a Gea instance everywhere and then use a "fully featured"
      * instance on development and a read-only instance on production.
      *
+     * @param  int                                $flags
      * @param  \Gea\Accessor\AccessorInterface    $accessor
      * @param  \Gea\Filter\FilterFactoryInterface $filterFactory
-     * @param  int                                $flags
      * @return static
      */
     public static function noLoaderInstance(
+        $flags = self::VAR_NAMES_NOT_HOLD,
         AccessorInterface $accessor = null,
-        FilterFactoryInterface $filterFactory = null,
-        $flags = self::VAR_NAMES_NOT_HOLD
+        FilterFactoryInterface $filterFactory = null
     ) {
         if ($flags & self::READ_ONLY && is_null($accessor)) {
             $accessor = new CompositeReadOnlyAccessor();
@@ -168,15 +168,15 @@ class Gea implements \ArrayAccess
      * Similar to noLoaderInstance() method, the instance returned by this method does not load any
      * variable, but also ensure no variable can be written, edited or discarded.
      *
-     * @param  \Gea\Accessor\AccessorInterface    $accessor
-     * @param  \Gea\Filter\FilterFactoryInterface $filterFactory
      * @param  int                                $flags
+     * @param  \Gea\Filter\FilterFactoryInterface $filterFactory
+     * @param  \Gea\Accessor\AccessorInterface    $accessor
      * @return static
      */
     public static function readOnlyInstance(
-        AccessorInterface $accessor = null,
+        $flags = self::VAR_NAMES_NOT_HOLD,
         FilterFactoryInterface $filterFactory = null,
-        $flags = self::VAR_NAMES_NOT_HOLD
+        AccessorInterface $accessor = null
     ) {
         is_null($accessor) and $accessor = new CompositeReadOnlyAccessor();
         $accessor instanceof FilteredAccessorInterface or $accessor = new CachedFilteredAccessor($accessor);

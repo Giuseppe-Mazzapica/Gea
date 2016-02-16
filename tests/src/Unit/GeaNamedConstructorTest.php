@@ -136,7 +136,7 @@ class GeaNamedConstructorTest extends TestCase
 
     public function testNoLoaderInstanceReadOnly()
     {
-        $gea = Gea::noLoaderInstance(null, null, Gea::READ_ONLY);
+        $gea = Gea::noLoaderInstance(Gea::READ_ONLY, null, null);
 
         $proxy = new Proxy($gea);
 
@@ -164,7 +164,7 @@ class GeaNamedConstructorTest extends TestCase
         $accessor = \Mockery::mock(FilteredAccessorInterface::class);
         $filters = \Mockery::mock(FilterFactoryInterface::class);
 
-        $gea = Gea::noLoaderInstance($accessor, $filters);
+        $gea = Gea::noLoaderInstance(Gea::VAR_NAMES_HOLD, $accessor, $filters);
 
         $proxy = new Proxy($gea);
 
@@ -205,7 +205,7 @@ class GeaNamedConstructorTest extends TestCase
         $accessor = \Mockery::mock(FilteredAccessorInterface::class);
         $filters = \Mockery::mock(FilterFactoryInterface::class);
 
-        $gea = Gea::readOnlyInstance($accessor, $filters, Gea::VAR_NAMES_HOLD);
+        $gea = Gea::readOnlyInstance(Gea::VAR_NAMES_HOLD, $filters, $accessor);
 
         $proxy = new Proxy($gea);
 
