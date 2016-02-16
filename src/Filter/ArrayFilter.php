@@ -19,7 +19,8 @@ final class ArrayFilter implements FilterInterface
 {
     use LazyFilterTrait;
 
-    const MODE_TRIM = 1;
+    const DO_TRIM  = 1;
+    const NOT_TRIM = 0;
 
     /**
      * @var bool
@@ -46,10 +47,10 @@ final class ArrayFilter implements FilterInterface
      * @param int           $flags
      * @param callable|null $walker
      */
-    public function __construct($separator = ',', $flags = self::MODE_TRIM, callable $walker = null)
+    public function __construct($separator = ',', $flags = self::DO_TRIM, callable $walker = null)
     {
         $this->separator = $separator;
-        $this->trim = is_int($flags) && ($flags & self::MODE_TRIM);
+        $this->trim = is_int($flags) && ($flags & self::DO_TRIM);
         $this->walker = $walker;
     }
 

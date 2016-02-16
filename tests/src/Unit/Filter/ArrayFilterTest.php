@@ -31,7 +31,7 @@ class ArrayFilterTest extends TestCase
 
     public function testFilterWithTrim()
     {
-        $filter = new ArrayFilter(',', ArrayFilter::MODE_TRIM);
+        $filter = new ArrayFilter(',', ArrayFilter::DO_TRIM);
 
         $value = 'a, b, c';
 
@@ -49,7 +49,7 @@ class ArrayFilterTest extends TestCase
 
     public function testFilterCustomSeparatorWithTrim()
     {
-        $filter = new ArrayFilter('|', ArrayFilter::MODE_TRIM);
+        $filter = new ArrayFilter('|', ArrayFilter::DO_TRIM);
 
         $value = 'a, b | c';
 
@@ -62,7 +62,7 @@ class ArrayFilterTest extends TestCase
             return "value: {$value}";
         };
 
-        $filter = new ArrayFilter(',', ArrayFilter::MODE_TRIM, $walker);
+        $filter = new ArrayFilter(',', ArrayFilter::DO_TRIM, $walker);
 
         $value = 'a, b, c';
 
