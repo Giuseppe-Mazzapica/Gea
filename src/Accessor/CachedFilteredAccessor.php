@@ -18,7 +18,7 @@ use Gea\Filter\FilterInterface;
  * @license http://opensource.org/licenses/MIT MIT
  * @package Gea
  */
-final class CachedFilteredAccessor implements FilteredAccessorInterface
+final class CachedFilteredAccessor implements FilteredAccessorInterface, CachedAccessorInterface
 {
     /**
      * @var array
@@ -112,5 +112,13 @@ final class CachedFilteredAccessor implements FilteredAccessorInterface
         }
 
         return $this->accessor->discard($var);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isCached($name)
+    {
+        return isset($this->cache[$name]);
     }
 }

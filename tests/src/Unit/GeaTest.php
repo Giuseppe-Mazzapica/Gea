@@ -11,6 +11,7 @@
 namespace Gea\Tests\Unit;
 
 use Andrew\Proxy;
+use Gea\Accessor\CachedAccessorInterface;
 use Gea\Accessor\FilteredAccessorInterface;
 use Gea\Filter\FilterFactoryInterface;
 use Gea\Filter\FilterInterface;
@@ -27,13 +28,13 @@ class GeaTest extends TestCase
 {
     /**
      * @expectedException \BadMethodCallException
-     * @expectedExceptionMessageRegExp /before loading/
+     * @expectedExceptionMessageRegExp /before first accessing value/
      */
     public function testAddFilterFailsWhenLoaded()
     {
-        $accessor = \Mockery::mock(FilteredAccessorInterface::class);
+        $accessor = \Mockery::mock(CachedAccessorInterface::class, FilteredAccessorInterface::class);
+        $accessor->shouldReceive('isCached')->once()->with('foo')->andReturn(true);
         $loader = \Mockery::mock(LoaderInterface::class);
-        $loader->shouldReceive('loaded')->andReturn(true);
         $filterFactory = \Mockery::mock(FilterFactoryInterface::class);
 
         $gea = new Gea($accessor, $loader, Gea::VAR_NAMES_NOT_HOLD, $filterFactory);

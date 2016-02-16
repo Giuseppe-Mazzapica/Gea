@@ -10,6 +10,7 @@
 
 namespace Gea;
 
+use Gea\Accessor\CachedAccessorInterface;
 use Gea\Accessor\CompositeAccessor;
 use Gea\Accessor\AccessorInterface;
 use Gea\Accessor\CachedFilteredAccessor;
@@ -217,8 +218,10 @@ class Gea implements \ArrayAccess
      */
     public function addFilter($name, $filter)
     {
-        if ($this->loader->loaded() && ! ($this->flags & self::NO_LOADER)) {
-            throw new \BadMethodCallException('Filters can be added only before loading value.');
+        if ($this->accessor instanceof CachedAccessorInterface && $this->accessor->isCached($name)) {
+            throw new \BadMethodCallException(
+                'When using cached accessor filters can only be added before first accessing value.'
+            );
         }
 
         if (! is_string($name)) {
