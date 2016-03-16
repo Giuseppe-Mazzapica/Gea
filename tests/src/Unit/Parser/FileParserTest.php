@@ -51,7 +51,7 @@ class FileParserTest extends TestCase
                 return trim($line);
             });
 
-        $parser = new FileParser(getenv('GEA_TESTS_FIXTURES_PATH').'/.env', $lineParser);
+        $parser = new FileParser(GEA_TESTS_FIXTURES_PATH.'/.env', $lineParser);
         $parsed = $parser->parse();
 
         $expected = [
