@@ -43,7 +43,7 @@ class GeaNamedConstructorTest extends TestCase
 
     public function testInstanceDefaults()
     {
-        $gea = Gea::instance(getenv('GEA_TESTS_FIXTURES_PATH'));
+        $gea = Gea::instance(GEA_TESTS_FIXTURES_PATH);
 
         $proxy = new Proxy($gea);
 
@@ -60,7 +60,7 @@ class GeaNamedConstructorTest extends TestCase
 
     public function testInstanceReadOnly()
     {
-        $gea = Gea::instance(getenv('GEA_TESTS_FIXTURES_PATH'), '.env', Gea::READ_ONLY);
+        $gea = Gea::instance(GEA_TESTS_FIXTURES_PATH, '.env', Gea::READ_ONLY);
 
         $proxy = new Proxy($gea);
 
@@ -89,7 +89,7 @@ class GeaNamedConstructorTest extends TestCase
             ->with(\Mockery::type(FileParser::class), $accessor)
             ->andReturn($loader);
 
-        $path = getenv('GEA_TESTS_FIXTURES_PATH');
+        $path = GEA_TESTS_FIXTURES_PATH;
 
         $gea = Gea::instance(
             $path,

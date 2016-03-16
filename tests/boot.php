@@ -17,7 +17,7 @@ if (! realpath($vendor)) {
 require_once $vendor.'autoload.php';
 require_once $vendor.'phpunit/phpunit/src/Framework/Assert/Functions.php';
 
-putenv('GEA_TESTS_FIXTURES_PATH='.__DIR__.'/fixtures');
+define('GEA_TESTS_FIXTURES_PATH', __DIR__.'/fixtures');
 
 unset($vendor);
 

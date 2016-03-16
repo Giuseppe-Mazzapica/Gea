@@ -43,7 +43,7 @@ class GeaTest extends TestCase
     protected function setUp()
     {
         parent::setUp();
-        $this->path = getenv('GEA_TESTS_FIXTURES_PATH');
+        $this->path = GEA_TESTS_FIXTURES_PATH;
     }
 
     protected function tearDown()
