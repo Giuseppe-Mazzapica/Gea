@@ -28,8 +28,6 @@ final class StringParser implements ParserInterface
     private $lineParser;
 
     /**
-     * StringParser constructor.
-     *
      * @param string                               $content
      * @param \Gea\Parser\LineParserInterface|null $lineParser
      */
@@ -40,6 +38,8 @@ final class StringParser implements ParserInterface
     }
 
     /**
+     * Return an array of variables stored in a string, one per line.
+     *
      * @inheritdoc
      */
     public function parse()

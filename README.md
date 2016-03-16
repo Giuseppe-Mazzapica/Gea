@@ -4,9 +4,7 @@ Gea
 > Environment variables management in PHP
 
 -----
-
-Highly inspired to [PHP Dotenv](https://github.com/vlucas/phpdotenv) by [Vance Lucas](http://www.vancelucas.com/).
-
+From a fork of [PHP Dotenv](https://github.com/vlucas/phpdotenv) by [Vance Lucas](http://www.vancelucas.com/).
 -----
 
 # Table of Contents
@@ -368,7 +366,7 @@ $gea->addFilter('DB_PASSWORD', 'required');
 ### Validating Variables
 
 Sometimes is required that variables meets some requirements. This is done in Gea using filters. At the moment, the only
-validation filter is `'enum'` that ensures the variable ois in a set of predefined values.
+validation filter is `'enum'` that ensures the variable is in a set of predefined values.
 
 ```php
 $allowed = ['ready', 'in-progress', 'draft'];
@@ -487,7 +485,7 @@ The original idea was to contribute to PHP Dotenv and try to introduce there an 
 allow me to customize the way it works by default.
 
 But after having forked and added the interface, I could not stop myself refactoring... ending up in a completely different
-architecture, something that can't be merged in a pull request.
+architecture, something that can't be merged in a pull request. Nor in two.
 
 ## Differences between PHP dotenv and Gea
 
@@ -497,13 +495,12 @@ architecture, something that can't be merged in a pull request.
 - Introduce filtering (PHP Dotenv has "required" and "allowedValues" feature, OOP nature of Gea filters make them easier configurable)
 - Env variables can contain more than one *nested* var
 - Easy to have a clue of which variables have been set
-- License that is BSD-3-clause for PHP Dotenv, MIT for Gea. 
+- License, that is BSD-3-clause for PHP Dotenv, MIT for Gea. 
 
 ## What stayed the same?
 
-- The idea
+- Most of the idea
 - The code that parse `.env` files, that has been proved to be very effective, has not be touched at all: thanks Vance :)
-- Part of this readme
 - Part of the tests and test fixtures
 
 -----

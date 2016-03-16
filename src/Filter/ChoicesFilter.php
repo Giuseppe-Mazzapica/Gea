@@ -13,6 +13,10 @@ namespace Gea\Filter;
 use Gea\Exception\FilterException;
 
 /**
+ * Filter a variable to make sure it only can assume specific values.
+ * Similar to EnumFilter, this one make non-strict comparison for values.
+ * This is not lazy, it means variables are checked as soon they are loaded, even if never used.
+ *
  * @author  Giuseppe Mazzapica <giuseppe.mazzapica@gmail.com>
  * @license http://opensource.org/licenses/MIT MIT
  * @package Gea
@@ -21,10 +25,7 @@ final class ChoicesFilter implements FilterInterface
 {
     use LazyFilterTrait;
 
-    /**
-     * @var bool
-     */
-    private static $lazy = false;
+    const LAZY = false;
 
     /**
      * @var array
@@ -32,8 +33,8 @@ final class ChoicesFilter implements FilterInterface
     private $allowed = [];
 
     /**
-     * @param  array                     $args
-     * @return \Gea\Filter\ChoicesFilter
+     * @param  array                  $args
+     * @return \Gea\Filter\EnumFilter
      */
     public static function fromArray(array $args)
     {
@@ -53,7 +54,7 @@ final class ChoicesFilter implements FilterInterface
      */
     public function filter($value)
     {
-        if (! in_array($value, $this->allowed, false)) {
+        if (! in_array($value, $this->allowed)) {
             throw new FilterException(':name value is not allowed.');
         }
 

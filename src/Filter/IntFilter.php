@@ -13,6 +13,9 @@ namespace Gea\Filter;
 use Gea\Exception\FilterException;
 
 /**
+ * Enforce integer type to variable.
+ * Empty values casted to 0, non-numeric values throw an exception.
+ *
  * @author  Giuseppe Mazzapica <giuseppe.mazzapica@gmail.com>
  * @license http://opensource.org/licenses/MIT MIT
  * @package Gea
@@ -21,10 +24,7 @@ final class IntFilter implements FilterInterface
 {
     use LazyFilterTrait;
 
-    /**
-     * @var bool
-     */
-    private static $lazy = true;
+    const LAZY = true;
 
     /**
      * @inheritdoc

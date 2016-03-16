@@ -19,7 +19,6 @@ trait LazyFilterTrait
 {
     public function isLazy()
     {
-        /** @noinspection PhpUndefinedFieldInspection */
-        return self::$lazy;
+        return self::LAZY;
     }
 }

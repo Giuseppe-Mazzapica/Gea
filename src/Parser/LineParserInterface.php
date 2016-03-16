@@ -24,6 +24,9 @@ namespace Gea\Parser;
 interface LineParserInterface
 {
     /**
+     * Receives a line of text as string and return related variable VO instance.
+     * Have to take care of checking for empty, comments and invalid variables.
+     *
      * @param  string                          $lineString
      * @return \Gea\Variable\VariableInterface
      */

@@ -13,6 +13,9 @@ namespace Gea\Filter;
 use Gea\Exception\FilterException;
 
 /**
+ * Instantiate an object of a given class, passing the value of a variable to constructor.
+ * Useful to instantiate value objects starting from string values in env variables.
+ *
  * @author  Giuseppe Mazzapica <giuseppe.mazzapica@gmail.com>
  * @license http://opensource.org/licenses/MIT MIT
  * @package Gea
@@ -21,10 +24,7 @@ final class ObjectFilter implements FilterInterface
 {
     use LazyFilterTrait;
 
-    /**
-     * @var bool
-     */
-    private static $lazy = true;
+    const LAZY = true;
 
     /**
      * @var string

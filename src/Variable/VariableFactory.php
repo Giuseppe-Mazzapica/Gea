@@ -18,6 +18,9 @@ namespace Gea\Variable;
 final class VariableFactory implements VariableFactoryInterface
 {
     /**
+     * Create a variable instance with given of default class.
+     * The name provided is parsed to search for nested variables.
+     *
      * @param  string                          $name
      * @param  string                          $value
      * @param  string|null                     $class

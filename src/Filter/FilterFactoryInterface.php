@@ -11,6 +11,8 @@
 namespace Gea\Filter;
 
 /**
+ * Easy the instantiation of filters objects only providing filter name.
+ *
  * @author  Giuseppe Mazzapica <giuseppe.mazzapica@gmail.com>
  * @license http://opensource.org/licenses/MIT MIT
  * @package Gea

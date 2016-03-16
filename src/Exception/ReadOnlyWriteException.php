@@ -24,7 +24,7 @@ final class ReadOnlyWriteException extends \RuntimeException
 
         $message = 'Can\'t %s "%s" because Gea is in read-only mode.';
 
-        return new static(sprintf($message, $name, $action));
+        return new static(sprintf($message, $action, $name));
     }
 
     public static function forVars($action = 'flush')

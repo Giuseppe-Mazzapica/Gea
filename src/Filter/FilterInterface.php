@@ -11,6 +11,11 @@
 namespace Gea\Filter;
 
 /**
+ * Filters instances can be attached to variable names to edit the values.
+ * They can do different things, like casting to types, checking existence or validity.
+ * A filter may be lazy or not. A lazy filter is only applied when the variable is first accessed,
+ * non-lazy filter are evaluated as soon as variables are loaded.
+ *
  * @author  Giuseppe Mazzapica <giuseppe.mazzapica@gmail.com>
  * @license http://opensource.org/licenses/MIT MIT
  * @package Gea

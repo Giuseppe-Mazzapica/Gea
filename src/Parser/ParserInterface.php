@@ -18,6 +18,8 @@ namespace Gea\Parser;
 interface ParserInterface
 {
     /**
+     * Parse a source of variables and return an array of variable instances.
+     *
      * @return \Gea\Variable\VariableInterface[]
      */
     public function parse();

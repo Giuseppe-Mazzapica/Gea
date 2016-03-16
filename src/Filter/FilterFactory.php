@@ -11,6 +11,9 @@
 namespace Gea\Filter;
 
 /**
+ * Implementation of filter factory that can instantiate the filters shipped with Gea and custom
+ * filters that can be "added" to the factory.
+ *
  * @author  Giuseppe Mazzapica <giuseppe.mazzapica@gmail.com>
  * @license http://opensource.org/licenses/MIT MIT
  * @package Gea

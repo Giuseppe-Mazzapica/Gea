@@ -34,8 +34,6 @@ final class FileParser implements ParserInterface
     private $lineParser;
 
     /**
-     * FileParser constructor.
-     *
      * @param string                          $filepath
      * @param \Gea\Parser\LineParserInterface $lineParser
      */
@@ -46,6 +44,9 @@ final class FileParser implements ParserInterface
     }
 
     /**
+     * Loads a file whose path was passed to constructor and parse its content to extract
+     * variables.
+     *
      * @inheritdoc
      */
     public function parse()
@@ -79,15 +80,15 @@ final class FileParser implements ParserInterface
      */
     private function getLines()
     {
-        $f = fopen($this->filepath, 'r');
-        if (! $f) {
+        $handle = fopen($this->filepath, 'r');
+        if (! $handle) {
             throw new \RuntimeException(
                 sprintf('Environment file "%s" can\'t be read.', $this->filepath)
             );
         }
-        while ($line = fgets($f)) {
+        while ($line = fgets($handle)) {
             yield $line;
         }
-        fclose($f);
+        fclose($handle);
     }
 }

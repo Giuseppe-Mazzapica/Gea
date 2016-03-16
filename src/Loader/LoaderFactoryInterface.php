@@ -23,6 +23,8 @@ interface LoaderFactoryInterface
     const CONTRACT = LoaderInterface::class;
 
     /**
+     * Instantiate a loader given a Parser and an Accessor instance.
+     *
      * @param  \Gea\Parser\ParserInterface     $parser
      * @param  \Gea\Accessor\AccessorInterface $accessor
      * @return \Gea\Loader\LoaderInterface

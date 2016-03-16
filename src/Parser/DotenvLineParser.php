@@ -33,8 +33,6 @@ final class DotenvLineParser implements LineParserInterface
     private $varFactory;
 
     /**
-     * DotenvLineParser constructor.
-     *
      * @param \Gea\Variable\VariableFactoryInterface|null $varFactory
      */
     public function __construct(VariableFactoryInterface $varFactory = null)
@@ -43,19 +41,13 @@ final class DotenvLineParser implements LineParserInterface
     }
 
     /**
-     * @param  string                      $lineString
-     * @return \Gea\Variable\Variable|void
+     * @inheritdoc
      */
     public function parseLine($lineString = '')
     {
         $value = null;
         $lineString = is_string($lineString) ? trim($lineString) : '';
-
-        if (
-            empty($lineString)
-            || (strpos($lineString, '#') === 0)
-            || (strpos($lineString, '=') === false)
-        ) {
+        if (!$lineString || strpos($lineString, '#') === 0 || ! strpos($lineString, '=')) {
             return new Variable([]); // invalid variable
         }
 
@@ -87,7 +79,7 @@ final class DotenvLineParser implements LineParserInterface
 
     /**
      * @param  string $value
-     * @param         $quote
+     * @param  string $quote
      * @return string
      */
     private function sanitiseQuotedValue($value, $quote)

@@ -11,6 +11,8 @@
 namespace Gea\Variable;
 
 /**
+ * Immutable value object that hold the name and value of an environment variable.
+ *
  * @author  Giuseppe Mazzapica <giuseppe.mazzapica@gmail.com>
  * @license http://opensource.org/licenses/MIT MIT
  * @package Gea

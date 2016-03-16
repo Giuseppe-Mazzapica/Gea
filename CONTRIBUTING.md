@@ -4,7 +4,7 @@ They are public, so please send an email to the address on my [Github profile](h
 ----
 
 Before work on features or bug fix you might want to open an issue first.
-No need to do this for bugs that obviously need a fix.
+No need to do this for small things or evident bugs that need a fix.
 
 After the change or new feature has been discussed, the contributing flow is:
 

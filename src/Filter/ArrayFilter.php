@@ -11,6 +11,9 @@
 namespace Gea\Filter;
 
 /**
+ * This filter enforce a variable to be an array, expoding its content by given separator.
+ * Optionally, map the result of exploding with a given callback.
+ *
  * @author  Giuseppe Mazzapica <giuseppe.mazzapica@gmail.com>
  * @license http://opensource.org/licenses/MIT MIT
  * @package Gea
@@ -19,13 +22,9 @@ final class ArrayFilter implements FilterInterface
 {
     use LazyFilterTrait;
 
+    const LAZY = true;
     const DO_TRIM  = 1;
     const NOT_TRIM = 0;
-
-    /**
-     * @var bool
-     */
-    private static $lazy = true;
 
     /**
      * @var string

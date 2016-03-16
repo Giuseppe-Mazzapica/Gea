@@ -39,9 +39,11 @@ final class CompositeAccessor implements AccessorInterface
                 return $_SERVER[$name];
             default:
                 $value = getenv($name);
+                // switch getenv default to null
+                $value === false and $value = null;
         }
 
-        return $value === false ? null : $value; // switch getenv default to null
+        return $value;
     }
 
     /**

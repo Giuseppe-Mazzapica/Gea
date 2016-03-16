@@ -52,6 +52,9 @@ class Gea implements \ArrayAccess
     protected $loader;
 
     /**
+     * Set to `true` on flush, is used to avoid to load variables again on read,
+     * after an intentional flush happened
+     *
      * @var bool
      */
     protected $flushed = false;
@@ -210,7 +213,7 @@ class Gea implements \ArrayAccess
     }
 
     /**
-     * Attach one or more filters to a variable.
+     * Attach one or more filters to one or a variables.
      *
      * @param  string       $name
      * @param  string|array $filter
@@ -224,16 +227,18 @@ class Gea implements \ArrayAccess
             );
         }
 
-        if (! is_string($name)) {
-            throw new \InvalidArgumentException('Var name to be filtered must be in a string.');
+        if (! is_string($name) && ! is_array($name)) {
+            throw new \InvalidArgumentException(
+                'Variable(s) name to be filtered must be in a string or an array of strings.'
+            );
         }
 
         $toRun = [];
         $filter = is_array($filter) ? $filter : [$filter];
 
-        array_walk($filter, function ($args, $key, $name) use (&$toRun) {
-            $toRun = $this->handleFilter($args, $key, $name, $toRun);
-        }, $name);
+        array_walk($filter, function ($args, $key, $names) use (&$toRun) {
+            $toRun = $this->handleFilter($args, $key, $names, $toRun);
+        }, array_filter((array) $name, 'is_string'));
 
         $this->toReadFirst = array_merge($this->toReadFirst, $toRun);
 
@@ -267,10 +272,7 @@ class Gea implements \ArrayAccess
     {
         if (! ($this->flags & self::VAR_NAMES_HOLD)) {
             throw new \BadMethodCallException(
-                sprintf(
-                    'Variable names can be accessed only when VAR_NAMES_HOLD flag is true.',
-                    get_called_class()
-                )
+                'Variable names can be accessed only when VAR_NAMES_HOLD flag is true.'
             );
         }
 
@@ -358,16 +360,26 @@ class Gea implements \ArrayAccess
         $this->bailIfReadOnly($name, 'discard');
 
         $now = $this->read($name);
+
         if (! is_null($now)) {
             $this->accessor->discard($name);
-            in_array($name, $this->varNames) and $this->varNames = array_diff($this->varNames,
-                [$name]);
+        }
+
+        if (in_array($name, $this->varNames, true)) {
+            $this->varNames = array_diff($this->varNames, [$name]);
         }
 
         return $now;
     }
 
-    protected function handleFilter($args, $key, $name, array $toRun = [])
+    /**
+     * @param  \Gea\Filter\FilterInterface|string|array $args
+     * @param  int|string                               $key
+     * @param  array                                    $names
+     * @param  array                                    $toRun
+     * @return mixed
+     */
+    protected function handleFilter($args, $key, array $names, array $toRun = [])
     {
         $filter = null;
 
@@ -386,10 +398,14 @@ class Gea implements \ArrayAccess
             );
         }
 
-        $this->accessor->addFilter($name, $filter);
-        $filter->isLazy() or $toRun[] = $name;
+        $lazy = $filter->isLazy();
 
-        return $toRun;
+        return array_reduce($names, function (array $toRun, $name) use ($lazy, $filter) {
+            $this->accessor->addFilter($name, $filter);
+            $lazy or $toRun[] = $name;
+
+            return $toRun;
+        }, $toRun);
     }
 
     /**

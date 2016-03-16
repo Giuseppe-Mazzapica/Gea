@@ -13,6 +13,9 @@ namespace Gea\Filter;
 use Gea\Exception\FilterException;
 
 /**
+ * Filter a variable to make sure it only can assume specific values.
+ * This is not lazy, it means variables are checked as soon they are loaded, even if never used.
+ *
  * @author  Giuseppe Mazzapica <giuseppe.mazzapica@gmail.com>
  * @license http://opensource.org/licenses/MIT MIT
  * @package Gea
@@ -21,10 +24,7 @@ final class EnumFilter implements FilterInterface
 {
     use LazyFilterTrait;
 
-    /**
-     * @var bool
-     */
-    private static $lazy = false;
+    const LAZY = false;
 
     /**
      * @var array

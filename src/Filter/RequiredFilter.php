@@ -13,6 +13,10 @@ namespace Gea\Filter;
 use Gea\Exception\FilterException;
 
 /**
+ * Ensure a variable is set.
+ * This is a non-lazy filter: variables are checked as soon as loaded, and any error throws
+ * exception even if the variable is never accessed.
+ *
  * @author  Giuseppe Mazzapica <giuseppe.mazzapica@gmail.com>
  * @license http://opensource.org/licenses/MIT MIT
  * @package Gea
@@ -21,10 +25,7 @@ final class RequiredFilter implements FilterInterface
 {
     use LazyFilterTrait;
 
-    /**
-     * @var bool
-     */
-    private static $lazy = false;
+    const LAZY = false;
 
     /**
      * @inheritdoc

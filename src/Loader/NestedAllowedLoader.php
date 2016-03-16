@@ -47,7 +47,9 @@ final class NestedAllowedLoader implements LoaderInterface
     }
 
     /**
-     * @inheritdoc
+     * Get an array of variable instances from parser, and loops through them to resolve
+     * nested variables.
+     * Returns the name of all variables loaded.
      */
     public function load()
     {
@@ -70,10 +72,10 @@ final class NestedAllowedLoader implements LoaderInterface
             }
         });
 
-        array_walk($nested, function (VariableInterface $info) use (&$names) {
-            $value = array_reduce($info['nested'], [$this, 'resolveNested'], $info['value']);
-            $this->accessor->write($info['name'], $value);
-            $names[] = $info['name'];
+        array_walk($nested, function (VariableInterface $var) use (&$names) {
+            $value = array_reduce($var['nested'], [$this, 'resolveNested'], $var['value']);
+            $this->accessor->write($var['name'], $value);
+            $names[] = $var['name'];
         });
 
         $this->loaded = true;

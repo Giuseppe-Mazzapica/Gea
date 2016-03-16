@@ -11,6 +11,8 @@
 namespace Gea\Filter;
 
 /**
+ * Enforce a variable to be a boolean.
+ *
  * @author  Giuseppe Mazzapica <giuseppe.mazzapica@gmail.com>
  * @license http://opensource.org/licenses/MIT MIT
  * @package Gea
@@ -19,10 +21,7 @@ final class BoolFilter implements FilterInterface
 {
     use LazyFilterTrait;
 
-    /**
-     * @var bool
-     */
-    private static $lazy = true;
+    const LAZY = true;
 
     /**
      * @inheritdoc

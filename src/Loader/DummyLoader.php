@@ -32,7 +32,7 @@ final class DummyLoader implements LoaderInterface
     }
 
     /**
-     * Since this class do nothing, we always return true, to avoid load() is called again and again.
+     * Since this class do nothing, just return true after load() has been called once.
      *
      * @return bool
      */

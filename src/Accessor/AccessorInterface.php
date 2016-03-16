@@ -11,8 +11,6 @@
 namespace Gea\Accessor;
 
 /**
- * Interface AccessorInterface
- *
  * @author  Giuseppe Mazzapica <giuseppe.mazzapica@gmail.com>
  * @license http://opensource.org/licenses/MIT MIT
  * @package Dotenv

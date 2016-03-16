@@ -11,6 +11,9 @@
 namespace Gea\Filter;
 
 /**
+ * Filter a variable with a given callback.
+ * Can work in both lazy and non-lazy mode.
+ *
  * @author  Giuseppe Mazzapica <giuseppe.mazzapica@gmail.com>
  * @license http://opensource.org/licenses/MIT MIT
  * @package Gea
