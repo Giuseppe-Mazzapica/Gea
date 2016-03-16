@@ -4,7 +4,15 @@ Gea
 > Environment variables management in PHP
 
 -----
+
+[![travis-ci status](https://img.shields.io/travis/Giuseppe-Mazzapica/Gea.svg?style=flat-square)](https://travis-ci.org/Giuseppe-Mazzapica/Gea)
+[![codecov.io](https://img.shields.io/codecov/c/github/Giuseppe-Mazzapica/Gea.svg?style=flat-square)](http://codecov.io/github/Giuseppe-Mazzapica/Gea?branch=master)
+[![release](https://img.shields.io/github/release/Giuseppe-Mazzapica/Gea.svg?style=flat-square)](https://github.com/Giuseppe-Mazzapica/Gea/releases/latest)
+
+-----
+
 From a fork of [PHP Dotenv](https://github.com/vlucas/phpdotenv) by [Vance Lucas](http://www.vancelucas.com/).
+
 -----
 
 # Table of Contents
