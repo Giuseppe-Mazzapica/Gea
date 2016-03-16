@@ -418,7 +418,7 @@ class GeaTest extends TestCase
     {
         $accessor = \Mockery::mock(FilteredAccessorInterface::class);
         $accessor->shouldReceive('discard')
-                 ->twice()
+                 ->once()
                  ->andReturnUsing(function($var) {
                      assertTrue(in_array($var, ['foo', 'bar'], true));
                  });
@@ -427,7 +427,7 @@ class GeaTest extends TestCase
         $loader->shouldReceive('load')->andReturn(['foo', 'bar']);
         $loader->shouldReceive('loaded')->andReturn(true);
         $loader->shouldReceive('flush')->once()->andReturnNull();
-        
+
         $filterFactory = \Mockery::mock(FilterFactoryInterface::class);
 
         $gea = new Gea($accessor, $loader, Gea::VAR_NAMES_HOLD, $filterFactory);
