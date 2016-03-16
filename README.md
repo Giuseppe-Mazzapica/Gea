@@ -159,7 +159,7 @@ After all variables have been loaded:
 ```php
 $gea = Gea\Gea::instance(__DIR__);
 $gea->load();
-``
+```
 
 it's possible to access them in different ways:
 
