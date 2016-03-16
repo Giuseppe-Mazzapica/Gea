@@ -108,11 +108,21 @@ class Gea implements \ArrayAccess
         LoaderFactoryInterface $loaderFactory = null
     ) {
         $dir = is_string($dir) ? trim($dir, '/\\') : '';
-        $filename = is_string($filename) ? trim($filename, '/\\') : '';
-        $realpath = $dir && $filename ? realpath("{$dir}/{$filename}") : false;
-        if (! $realpath) {
+        if (is_dir($dir)) {
             throw new \InvalidArgumentException(
-                sprintf('Please provide a valid path for environment file.', $dir)
+                'Please provide a valid folder for environment file.'
+            );
+        }
+        $filename = is_string($filename) ? trim($filename, '/\\') : '';
+        if (!$filename) {
+            throw new \InvalidArgumentException(
+                'Please provide a valid file name for environment file.'
+            );
+        }
+        $realpath = realpath("{$dir}/{$filename}");
+        if (!$realpath) {
+            throw new \InvalidArgumentException(
+                sprintf('%s is not a valid path for environment file.', $dir)
             );
         }
         if ($flags & self::READ_ONLY && is_null($accessor)) {
