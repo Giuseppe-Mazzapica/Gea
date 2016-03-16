@@ -48,8 +48,10 @@ class GeaTest extends TestCase
 
     protected function tearDown()
     {
-        $this->gea->flush(Gea::FLUSH_HARD);
-        unset($this->gea);
+        if ($this->gea) {
+            $this->gea->flush(Gea::FLUSH_HARD);
+            unset($this->gea);
+        }
         parent::tearDown();
     }
 
