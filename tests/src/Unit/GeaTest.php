@@ -417,11 +417,17 @@ class GeaTest extends TestCase
     public function testHardFlushFlushesAllVarNamesDiscardGiven()
     {
         $accessor = \Mockery::mock(FilteredAccessorInterface::class);
-        $accessor->shouldReceive('discard')->once()->with('foo', 0);
+        $accessor->shouldReceive('discard')
+                 ->twice()
+                 ->andReturnUsing(function($var) {
+                     assertTrue(in_array($var, ['foo', 'bar'], true));
+                 });
+
         $loader = \Mockery::mock(LoaderInterface::class);
         $loader->shouldReceive('load')->andReturn(['foo', 'bar']);
         $loader->shouldReceive('loaded')->andReturn(true);
         $loader->shouldReceive('flush')->once()->andReturnNull();
+        
         $filterFactory = \Mockery::mock(FilterFactoryInterface::class);
 
         $gea = new Gea($accessor, $loader, Gea::VAR_NAMES_HOLD, $filterFactory);
