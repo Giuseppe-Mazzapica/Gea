@@ -107,7 +107,7 @@ class Gea implements \ArrayAccess
         FilterFactoryInterface $filterFactory = null,
         LoaderFactoryInterface $loaderFactory = null
     ) {
-        $dir = is_string($dir) ? trim($dir, '/\\') : '';
+        $dir = is_string($dir) ? rtrim($dir, '/\\') : '';
         if (is_dir($dir)) {
             throw new \InvalidArgumentException(
                 'Please provide a valid folder for environment file.'
